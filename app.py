@@ -18,9 +18,10 @@ import ctypes
 import winreg
 import threading
 import winsound
+import hashlib
 from ctypes import wintypes
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 # --- DPI Awareness ---
 try:
@@ -106,8 +107,8 @@ class BITMAPINFO(ctypes.Structure):
     ]
 
 # 64-bit Windows API Prototypes
-user32.DefWindowProcW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
-user32.DefWindowProcW.restype = wintypes.LPARAM
+user32.DefWindowProcW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, ctypes.c_size_t]
+user32.DefWindowProcW.restype = ctypes.c_ssize_t
 
 user32.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, wintypes.UINT]
 user32.SetWindowPos.restype = wintypes.BOOL
@@ -160,6 +161,19 @@ ICON_PATH = os.path.join(ASSETS_DIR, "icon.ico")
 SOUNDS_DIR = os.path.join(ASSETS_DIR, "sounds")
 if not os.path.exists(SOUNDS_DIR):
     SOUNDS_DIR = os.path.join(EXE_DIR, "assets", "sounds")
+
+PHONEMES_DIR = os.path.join(ASSETS_DIR, "phonemes")
+if not os.path.exists(PHONEMES_DIR):
+    PHONEMES_DIR = os.path.join(EXE_DIR, "assets", "phonemes")
+
+VOICES_CACHE_DIR = os.path.join(ASSETS_DIR, "voices_cache")
+if not os.path.exists(VOICES_CACHE_DIR):
+    VOICES_CACHE_DIR = os.path.join(EXE_DIR, "assets", "voices_cache")
+
+VOICE_NOTES_DIR = os.path.join(EXE_DIR, "voice_notes")
+os.makedirs(VOICE_NOTES_DIR, exist_ok=True)
+os.makedirs(VOICES_CACHE_DIR, exist_ok=True)
+
 CHARACTERS_DIR = os.path.join(EXE_DIR, "characters")
 CONFIG_PATH = os.path.join(EXE_DIR, "mascot_config.json")
 
@@ -306,7 +320,12 @@ SECTOR = (math.pi * 2) / len(CLOCKWISE)
 DEAD_ZONE = 60
 HYSTERESIS = 0.12
 
-WNDPROC = ctypes.WINFUNCTYPE(ctypes.c_longlong, wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM)
+WNDPROC = ctypes.WINFUNCTYPE(ctypes.c_ssize_t, wintypes.HWND, wintypes.UINT, wintypes.WPARAM, ctypes.c_size_t)
+
+def bubble_wnd_proc(hwnd, msg, wparam, lparam):
+    return user32.DefWindowProcW(hwnd, msg, wparam, lparam)
+
+BUBBLE_WNDPROC = WNDPROC(bubble_wnd_proc)
 
 class WNDCLASSEX(ctypes.Structure):
     _fields_ = [
@@ -404,6 +423,200 @@ def discover_all_characters():
 
     return custom_chars, ref_chars
 
+def build_phoneme_timeline(text, total_duration):
+    """Builds a timed phoneme schedule matching text syllables and pauses."""
+    tokens = []
+    for ch in text:
+        code = ord(ch)
+        if ch in " ,.!?~-…\n":
+            tokens.append(('M', 2.2 if ch in ",.!?~…\n" else 1.2))
+        elif 0x0C00 <= code <= 0x0C7F:
+            if code in (0x0C05, 0x0C06, 0x0C3E):
+                tokens.append(('A', 1.6))
+            elif code in (0x0C07, 0x0C08, 0x0C3F, 0x0C40):
+                tokens.append(('I', 1.3))
+            elif code in (0x0C09, 0x0C0A, 0x0C41, 0x0C42):
+                tokens.append(('U', 1.4))
+            elif code in (0x0C0E, 0x0C0F, 0x0C10, 0x0C46, 0x0C47, 0x0C48):
+                tokens.append(('E', 1.4))
+            elif code in (0x0C12, 0x0C13, 0x0C14, 0x0C4A, 0x0C4B, 0x0C4C):
+                tokens.append(('O', 1.5))
+            elif code in (0x0C2E, 0x0C2C, 0x0C2A, 0x0C2D, 0x0C2B):
+                tokens.append(('M', 1.1))
+            else:
+                tokens.append(('E', 1.0))
+        else:
+            c = ch.lower()
+            if c in 'a': tokens.append(('A', 1.5))
+            elif c in 'o': tokens.append(('O', 1.4))
+            elif c in 'u': tokens.append(('U', 1.4))
+            elif c in 'e': tokens.append(('E', 1.3))
+            elif c in 'i': tokens.append(('I', 1.2))
+            elif c in 'mbp': tokens.append(('M', 1.0))
+            elif c in 'sztdjckn': tokens.append(('I', 1.0))
+            else: tokens.append(('E', 1.0))
+
+    if not tokens:
+        tokens = [('M', 1.0)]
+
+    compacted = []
+    for p, weight in tokens:
+        if compacted and compacted[-1][0] == p:
+            compacted[-1] = (p, compacted[-1][1] + weight * 0.75)
+        else:
+            compacted.append([p, weight])
+
+    total_weight = sum(w for _, w in compacted)
+    timeline = []
+    cur = 0.0
+    for p, w in compacted:
+        dur = (w / total_weight) * max(0.5, total_duration)
+        timeline.append((cur, cur + dur, p))
+        cur += dur
+    return timeline
+
+class SpeechBubbleWindow:
+    """Desktop overlay whisper bubble with dark glassmorphism and pink glow."""
+    def __init__(self):
+        self.hwnd = None
+        self.text = ""
+        self.width = 280
+        self.height = 60
+        self.font = None
+        self._init_font()
+        self._create_window()
+
+    def _init_font(self):
+        try:
+            if os.path.isfile("C:/Windows/Fonts/Nirmala.ttf"):
+                self.font = ImageFont.truetype("C:/Windows/Fonts/Nirmala.ttf", 15)
+            elif os.path.isfile("C:/Windows/Fonts/segoeui.ttf"):
+                self.font = ImageFont.truetype("C:/Windows/Fonts/segoeui.ttf", 15)
+            else:
+                self.font = ImageFont.load_default()
+        except Exception:
+            self.font = ImageFont.load_default()
+
+    def _create_window(self):
+        hinst = kernel32.GetModuleHandleW(None)
+        wc = WNDCLASSEX()
+        wc.cbSize = ctypes.sizeof(WNDCLASSEX)
+        wc.lpfnWndProc = BUBBLE_WNDPROC
+        wc.hInstance = hinst
+        wc.lpszClassName = "MascotSpeechBubbleClass"
+        user32.RegisterClassExW(ctypes.byref(wc))
+
+        self.hwnd = user32.CreateWindowExW(
+            0x00080000 | 0x00000080 | 0x00000020 | 0x00000008,
+            "MascotSpeechBubbleClass",
+            "Mascot Bubble",
+            WS_POPUP,
+            0, 0, self.width, self.height,
+            0, 0, hinst, None
+        )
+
+    def show_message(self, text, mascot_rect):
+        if not self.hwnd:
+            return
+        self.text = text
+        words = text.split(" ")
+        lines = []
+        curr = []
+        for w in words:
+            test = " ".join(curr + [w])
+            bbox = self.font.getbbox(test)
+            if (bbox[2] - bbox[0]) > 250 and curr:
+                lines.append(" ".join(curr))
+                curr = [w]
+            else:
+                curr.append(w)
+        if curr:
+            lines.append(" ".join(curr))
+
+        line_h = 20
+        pad_x = 16
+        pad_y = 10
+        max_line_w = 0
+        for l in lines:
+            bb = self.font.getbbox(l)
+            max_line_w = max(max_line_w, bb[2] - bb[0])
+
+        bw = max(160, min(340, max_line_w + pad_x * 2))
+        bh = len(lines) * line_h + pad_y * 2
+        self.width = bw
+        self.height = bh
+
+        img = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        draw.rounded_rectangle([(1, 1), (bw - 2, bh - 2)], radius=12, fill=(18, 22, 34, 235), outline=(255, 105, 180, 255), width=2)
+        for i, l in enumerate(lines):
+            draw.text((pad_x, pad_y + i * line_h), l, font=self.font, fill=(255, 255, 255, 255))
+
+        mx = mascot_rect.left
+        my = mascot_rect.top
+        msize = mascot_rect.right - mascot_rect.left
+        bx = mx + (msize - bw) // 2
+        by = max(10, my - bh - 8)
+
+        self._render_layered(img, bx, by, bw, bh)
+        user32.ShowWindow(self.hwnd, 5)
+        user32.SetWindowPos(self.hwnd, HWND_TOPMOST, bx, by, bw, bh, SWP_NOACTIVATE)
+
+    def move_with_mascot(self, mascot_rect):
+        if not self.hwnd or not self.text:
+            return
+        mx = mascot_rect.left
+        my = mascot_rect.top
+        msize = mascot_rect.right - mascot_rect.left
+        bx = mx + (msize - self.width) // 2
+        by = max(10, my - self.height - 8)
+        user32.SetWindowPos(self.hwnd, HWND_TOPMOST, bx, by, self.width, self.height, SWP_NOACTIVATE | SWP_NOSIZE)
+
+    def hide(self):
+        if self.hwnd:
+            self.text = ""
+            user32.ShowWindow(self.hwnd, 0)
+
+    def _render_layered(self, img, x, y, w, h):
+        arr = np.array(img, dtype=np.float32)
+        alpha = arr[..., 3] / 255.0
+        b = np.clip(arr[..., 2] * alpha, 0, 255).astype(np.uint8)
+        g = np.clip(arr[..., 1] * alpha, 0, 255).astype(np.uint8)
+        r = np.clip(arr[..., 0] * alpha, 0, 255).astype(np.uint8)
+        a = arr[..., 3].astype(np.uint8)
+        bgra = np.dstack([b, g, r, a])
+        bgra_flipped = np.ascontiguousarray(np.flipud(bgra)).tobytes()
+
+        hdc_screen = user32.GetDC(0)
+        hdc_mem = gdi32.CreateCompatibleDC(hdc_screen)
+
+        bmi = BITMAPINFO()
+        bmi.bmiHeader.biSize = ctypes.sizeof(BITMAPINFOHEADER)
+        bmi.bmiHeader.biWidth = w
+        bmi.bmiHeader.biHeight = h
+        bmi.bmiHeader.biPlanes = 1
+        bmi.bmiHeader.biBitCount = 32
+        bmi.bmiHeader.biCompression = BI_RGB
+
+        ppv = ctypes.c_void_p()
+        hbmp = gdi32.CreateDIBSection(hdc_screen, ctypes.byref(bmi), 0, ctypes.byref(ppv), None, 0)
+        ctypes.memmove(ppv, bgra_flipped, len(bgra_flipped))
+        hbmp_old = gdi32.SelectObject(hdc_mem, hbmp)
+
+        blend = BLENDFUNCTION(AC_SRC_OVER, 0, 255, AC_SRC_ALPHA)
+        pt_src = POINT(0, 0)
+        pt_dst = POINT(x, y)
+        sz = SIZE(w, h)
+
+        user32.UpdateLayeredWindow(
+            self.hwnd, hdc_screen, ctypes.byref(pt_dst), ctypes.byref(sz),
+            hdc_mem, ctypes.byref(pt_src), 0, ctypes.byref(blend), ULW_ALPHA
+        )
+        gdi32.SelectObject(hdc_mem, hbmp_old)
+        gdi32.DeleteObject(hbmp)
+        gdi32.DeleteDC(hdc_mem)
+        user32.ReleaseDC(0, hdc_screen)
+
 class NativeMascot:
     def __init__(self):
         self.size = 180
@@ -448,6 +661,26 @@ class NativeMascot:
         self.win_start_x = 0
         self.win_start_y = 0
         
+        # Talking & Visemes Lip-Sync (A, I, U, E, O, M)
+        self.is_speaking = False
+        self.speaking_until = 0
+        self.speaking_start_time = 0
+        self.speaking_timeline = []
+        self.current_phoneme = 'M'
+        self.phoneme_tiles = {}
+        
+        # Voice & Reminders
+        self.voice_type = "godavari"
+        self.voice_pitch = "+10Hz"
+        self.voice_rate = "+8%"
+        self.reminders_enabled = True
+        self.reminder_interval_min = 30
+        self.last_reminder_time = now
+        self.reminders_list = []
+        self.japanese_reminders_list = []
+        self.reminder_cursor = 0
+        
+        self.speech_bubble = SpeechBubbleWindow()
         self.hwnd = None
         self.dir_tiles = {}
         self.react_tiles = {}
@@ -465,6 +698,13 @@ class NativeMascot:
                     self.always_on_top = data.get("always_on_top", True)
                     self.teleport_enabled = data.get("teleport_enabled", True)
                     self.current_char_id = data.get("character", "mascot")
+                    self.voice_type = data.get("voice_type", "godavari")
+                    self.voice_pitch = data.get("voice_pitch", "+10Hz")
+                    self.voice_rate = data.get("voice_rate", "+8%")
+                    self.reminders_enabled = data.get("reminders_enabled", True)
+                    self.reminder_interval_min = data.get("reminder_interval_min", 30)
+                    self.reminders_list = data.get("reminders_list", [])
+                    self.japanese_reminders_list = data.get("japanese_reminders_list", [])
         except Exception as e:
             print("Config load error:", e)
 
@@ -475,10 +715,18 @@ class NativeMascot:
                 "size": self.size,
                 "sound_enabled": self.sound_enabled,
                 "always_on_top": self.always_on_top,
-                "teleport_enabled": self.teleport_enabled
+                "teleport_enabled": self.teleport_enabled,
+                "voice_enabled": True,
+                "voice_type": self.voice_type,
+                "voice_pitch": self.voice_pitch,
+                "voice_rate": self.voice_rate,
+                "reminders_enabled": self.reminders_enabled,
+                "reminder_interval_min": self.reminder_interval_min,
+                "reminders_list": self.reminders_list,
+                "japanese_reminders_list": self.japanese_reminders_list
             }
             with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2)
+                json.dump(data, f, ensure_ascii=False, indent=2)
         except Exception as e:
             print("Config save error:", e)
 
@@ -528,6 +776,19 @@ class NativeMascot:
             if rname not in new_react_tiles:
                 new_react_tiles[rname] = new_dir_tiles.get('center')
                 
+        # Load 6 phonemes (A, I, U, E, O, M)
+        self.phoneme_tiles = {}
+        for p_name in ['A', 'I', 'U', 'E', 'O', 'M']:
+            p_file = os.path.join(PHONEMES_DIR, f"{p_name}.png")
+            if os.path.isfile(p_file):
+                try:
+                    self.phoneme_tiles[p_name] = Image.open(p_file).convert('RGBA')
+                except Exception:
+                    pass
+        for p_name in ['A', 'I', 'U', 'E', 'O', 'M']:
+            if p_name not in self.phoneme_tiles:
+                self.phoneme_tiles[p_name] = new_dir_tiles.get('center')
+
         self.dir_tiles = new_dir_tiles
         self.react_tiles = new_react_tiles
         self.current_char_id = char_info["id"]
@@ -537,7 +798,9 @@ class NativeMascot:
             self.update_window_bitmap()
 
     def get_current_image(self):
-        if self.reaction and self.reaction in self.react_tiles:
+        if self.is_speaking and self.current_phoneme in self.phoneme_tiles:
+            base_img = self.phoneme_tiles[self.current_phoneme]
+        elif self.reaction and self.reaction in self.react_tiles:
             base_img = self.react_tiles[self.reaction]
         else:
             base_img = self.dir_tiles.get(self.direction, self.dir_tiles.get('center'))
@@ -676,6 +939,34 @@ class NativeMascot:
         now = time.time()
         need_update = False
         
+        # Check speaking state and mouth phoneme animation
+        if self.is_speaking:
+            if now > self.speaking_until:
+                self.is_speaking = False
+                self.current_phoneme = 'M'
+                self.squash_scale_y = 1.0
+                self.squash_scale_x = 1.0
+                self.speech_bubble.hide()
+                need_update = True
+            else:
+                elapsed = now - self.speaking_start_time
+                active_p = 'M'
+                for start_t, end_t, p in self.speaking_timeline:
+                    if start_t <= elapsed < end_t:
+                        active_p = p
+                        break
+                if active_p != self.current_phoneme:
+                    self.current_phoneme = active_p
+                    need_update = True
+                
+                # Dynamic talking bounce
+                new_sy = 1.0 + 0.022 * math.sin(elapsed * 15.0)
+                new_sx = 1.0 - 0.016 * math.sin(elapsed * 15.0)
+                if abs(new_sy - self.squash_scale_y) > 0.003:
+                    self.squash_scale_y = new_sy
+                    self.squash_scale_x = new_sx
+                    need_update = True
+
         # Check reaction expiry
         if self.reaction and now > self.reaction_until:
             self.reaction = None
@@ -745,10 +1036,16 @@ class NativeMascot:
                     need_update = True
 
         # Random Auto-Teleport Trigger
-        if self.teleport_enabled and self.teleport_state == 0 and not self.is_dragging:
+        if self.teleport_enabled and self.teleport_state == 0 and not self.is_dragging and not self.is_speaking:
             if now > self.next_teleport_time:
                 self.trigger_teleport()
                 return
+
+        # Automatic Scheduled Reminders Trigger
+        if self.reminders_enabled and not self.is_speaking and not self.is_dragging:
+            if now - self.last_reminder_time > (self.reminder_interval_min * 60):
+                self.last_reminder_time = now
+                self.trigger_random_reminder()
 
         # Cursor Tracking & Idle Natural Reactions
         if not self.is_dragging and self.teleport_state == 0:
@@ -824,6 +1121,86 @@ class NativeMascot:
         if need_update:
             self.update_window_bitmap()
 
+    def speak_dialogue(self, text, audio_name=None):
+        """Speaks a dialogue with viseme phoneme mouth animation and speech bubble."""
+        now = time.time()
+        
+        # Priority 1: Check voice_notes/ (Girl's real voice notes have top priority)
+        audio_path = None
+        if audio_name:
+            vn_path = os.path.join(VOICE_NOTES_DIR, audio_name)
+            if os.path.isfile(vn_path):
+                audio_path = vn_path
+            else:
+                vc_path = os.path.join(VOICES_CACHE_DIR, audio_name)
+                if os.path.isfile(vc_path):
+                    audio_path = vc_path
+                    
+        # Priority 2: If no pre-rendered audio found, synthesize dynamically via edge_tts
+        if not audio_path:
+            voice_id = "te-IN-ShrutiNeural" if self.voice_type == "godavari" else "ja-JP-NanamiNeural"
+            pitch = self.voice_pitch if self.voice_type == "godavari" else "+14Hz"
+            rate = self.voice_rate if self.voice_type == "godavari" else "+10%"
+            
+            cache_key = hashlib.md5(f"{text}_{voice_id}_{pitch}_{rate}".encode("utf-8")).hexdigest()
+            dyn_path = os.path.join(VOICES_CACHE_DIR, f"dyn_{cache_key}.mp3")
+            if not os.path.isfile(dyn_path):
+                try:
+                    import asyncio, edge_tts
+                    async def _run():
+                        comm = edge_tts.Communicate(text, voice_id, pitch=pitch, rate=rate)
+                        await comm.save(dyn_path)
+                    asyncio.run(_run())
+                except Exception as e:
+                    print("Dynamic TTS error:", e)
+            if os.path.isfile(dyn_path):
+                audio_path = dyn_path
+
+        # Determine duration & play via MCI
+        duration_sec = 3.5
+        if audio_path:
+            alias = f"spk_{int(time.time()*1000)}"
+            p = os.path.abspath(audio_path)
+            try:
+                winmm.mciSendStringW(f'open "{p}" type mpegvideo alias {alias}', None, 0, 0)
+                buf = ctypes.create_unicode_buffer(64)
+                winmm.mciSendStringW(f'set {alias} time format milliseconds', None, 0, 0)
+                winmm.mciSendStringW(f'status {alias} length', buf, 64, 0)
+                try:
+                    duration_sec = max(1.5, float(buf.value) / 1000.0)
+                except Exception:
+                    duration_sec = 3.5
+                winmm.mciSendStringW(f'play {alias}', None, 0, 0)
+                
+                def _close_after(al=alias, d=duration_sec):
+                    time.sleep(d + 0.3)
+                    winmm.mciSendStringW(f'close {al}', None, 0, 0)
+                threading.Thread(target=_close_after, daemon=True).start()
+            except Exception as e:
+                print("MCI play error:", e)
+
+        # Set speaking animation state
+        self.is_speaking = True
+        self.speaking_start_time = now
+        self.speaking_until = now + duration_sec
+        self.speaking_timeline = build_phoneme_timeline(text, duration_sec)
+        self.current_phoneme = self.speaking_timeline[0][2] if self.speaking_timeline else 'A'
+        
+        # Show speech bubble
+        rect = wintypes.RECT()
+        user32.GetWindowRect(self.hwnd, ctypes.byref(rect))
+        self.speech_bubble.show_message(text, rect)
+        self.update_window_bitmap()
+
+    def trigger_random_reminder(self):
+        """Triggers the next reminder dialogue based on active voice profile."""
+        pool = self.japanese_reminders_list if self.voice_type == "japanese" else self.reminders_list
+        if not pool:
+            return
+        item = pool[self.reminder_cursor % len(pool)]
+        self.reminder_cursor += 1
+        self.speak_dialogue(item["text"], item.get("audio"))
+
     def set_size(self, new_size):
         self.size = new_size
         rect = wintypes.RECT()
@@ -868,14 +1245,42 @@ class NativeMascot:
             
             user32.AppendMenuW(hmenu, MF_POPUP, h_char_menu, "🎭 Switch Character")
             user32.AppendMenuW(hmenu, MF_SEPARATOR, 0, None)
+
+            # 3. Talking Reminders & Voice Profile Submenu
+            h_voice_menu = user32.CreatePopupMenu()
+            user32.AppendMenuW(h_voice_menu, MF_STRING, 301, "🗣️ Say Reminder / Dialogue Now")
+            user32.AppendMenuW(h_voice_menu, MF_SEPARATOR, 0, None)
             
-            # 3. Teleport controls
+            godavari_flag = MF_CHECKED if self.voice_type == "godavari" else MF_UNCHECKED
+            user32.AppendMenuW(h_voice_menu, MF_STRING | godavari_flag, 302, "🌸 Telugu (Godavari Slang)")
+            
+            japanese_flag = MF_CHECKED if self.voice_type == "japanese" else MF_UNCHECKED
+            user32.AppendMenuW(h_voice_menu, MF_STRING | japanese_flag, 303, "✨ Japanese Anime (Nanami Cute)")
+            user32.AppendMenuW(h_voice_menu, MF_SEPARATOR, 0, None)
+            
+            rem_flag = MF_CHECKED if self.reminders_enabled else MF_UNCHECKED
+            user32.AppendMenuW(h_voice_menu, MF_STRING | rem_flag, 304, "⏰ Auto-Reminders Timer")
+            
+            h_freq_menu = user32.CreatePopupMenu()
+            for m in [15, 30, 45, 60]:
+                flag = MF_CHECKED if self.reminder_interval_min == m else MF_UNCHECKED
+                user32.AppendMenuW(h_freq_menu, MF_STRING | flag, 310 + m, f"⏱️ Every {m} Minutes")
+            user32.AppendMenuW(h_voice_menu, MF_POPUP, h_freq_menu, "⏱️ Reminder Frequency")
+            user32.AppendMenuW(h_voice_menu, MF_SEPARATOR, 0, None)
+            
+            user32.AppendMenuW(h_voice_menu, MF_STRING, 309, "📂 Open Voice Notes Folder...")
+            user32.AppendMenuW(h_voice_menu, MF_STRING, 320, "⚙️ Open Reminders Config...")
+            
+            user32.AppendMenuW(hmenu, MF_POPUP, h_voice_menu, "🎙️ Talking Reminders")
+            user32.AppendMenuW(hmenu, MF_SEPARATOR, 0, None)
+            
+            # 4. Teleport controls
             user32.AppendMenuW(hmenu, MF_STRING, 206, "🎲 Teleport Randomly")
             tp_flag = MF_CHECKED if self.teleport_enabled else MF_UNCHECKED
             user32.AppendMenuW(hmenu, MF_STRING | tp_flag, 207, "✨ Auto-Teleport (Every Few Mins)")
             user32.AppendMenuW(hmenu, MF_SEPARATOR, 0, None)
             
-            # 4. Toggles
+            # 5. Toggles
             sound_flag = MF_CHECKED if self.sound_enabled else MF_UNCHECKED
             user32.AppendMenuW(hmenu, MF_STRING | sound_flag, 201, "🔊 Sound Effects")
             
@@ -885,11 +1290,11 @@ class NativeMascot:
             startup_flag = MF_CHECKED if is_startup_enabled() else MF_UNCHECKED
             user32.AppendMenuW(hmenu, MF_STRING | startup_flag, 204, "🚀 Run on Startup")
             
-            # 5. Reset to Corner
+            # 6. Reset to Corner
             user32.AppendMenuW(hmenu, MF_STRING, 203, "📍 Reset to Corner")
             user32.AppendMenuW(hmenu, MF_SEPARATOR, 0, None)
             
-            # 6. Exit
+            # 7. Exit
             user32.AppendMenuW(hmenu, MF_STRING, 999, "❌ Exit Mascot")
             
             pt = POINT()
@@ -938,10 +1343,40 @@ class NativeMascot:
         elif cmd == 207:
             self.teleport_enabled = not self.teleport_enabled
             self.save_config()
+        elif cmd == 301:
+            self.trigger_random_reminder()
+        elif cmd == 302:
+            self.voice_type = "godavari"
+            self.save_config()
+            self.speak_dialogue("రేయ్ లబ్బే, ఏరా ఏం సేత్తన్నావ్, పోయి వాటర్ తాగు రా!", "water_godavari.mp3")
+        elif cmd == 303:
+            self.voice_type = "japanese"
+            self.save_config()
+            self.speak_dialogue("Ehh?! Rey labbe, era em sethannav... poi water thaagu ra! Ganbatte ne!", "water_japanese.mp3")
+        elif cmd == 304:
+            self.reminders_enabled = not self.reminders_enabled
+            self.save_config()
+        elif cmd in [325, 340, 355, 370]:
+            self.reminder_interval_min = cmd - 310
+            self.save_config()
+        elif cmd == 309:
+            os.makedirs(VOICE_NOTES_DIR, exist_ok=True)
+            try:
+                os.startfile(VOICE_NOTES_DIR)
+            except Exception:
+                import subprocess
+                subprocess.Popen(["explorer", VOICE_NOTES_DIR])
+        elif cmd == 320:
+            try:
+                os.startfile(CONFIG_PATH)
+            except Exception:
+                import subprocess
+                subprocess.Popen(["notepad", CONFIG_PATH])
         elif 1000 <= cmd < 1000 + len(all_selectable):
             selected = all_selectable[cmd - 1000]
             self.load_character_data(selected)
         elif cmd == 999:
+            self.speech_bubble.hide()
             user32.PostQuitMessage(0)
 
 # Global reference
@@ -999,6 +1434,8 @@ def wnd_proc(hwnd, msg, wparam, lparam):
         return 0
     return user32.DefWindowProcW(hwnd, msg, wparam, lparam)
 
+MAIN_WNDPROC = WNDPROC(wnd_proc)
+
 def main():
     global mascot_app
     mascot_app = NativeMascot()
@@ -1009,7 +1446,7 @@ def main():
     wndclass = WNDCLASSEX()
     wndclass.cbSize = ctypes.sizeof(WNDCLASSEX)
     wndclass.style = 0
-    wndclass.lpfnWndProc = WNDPROC(wnd_proc)
+    wndclass.lpfnWndProc = MAIN_WNDPROC
     wndclass.cbClsExtra = 0
     wndclass.cbWndExtra = 0
     wndclass.hInstance = hinst

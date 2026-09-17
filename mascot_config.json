@@ -1,7 +1,67 @@
 {
   "character": "mascot",
-  "size": 300,
+  "size": 180,
   "sound_enabled": true,
   "always_on_top": true,
-  "teleport_enabled": true
+  "teleport_enabled": true,
+  "voice_enabled": true,
+  "voice_type": "godavari",
+  "voice_pitch": "+10Hz",
+  "voice_rate": "+8%",
+  "reminders_enabled": true,
+  "reminder_interval_min": 30,
+  "reminders_list": [
+    {
+      "id": "water",
+      "text": "రేయ్ లబ్బే, ఏరా ఏం సేత్తన్నావ్, పోయి వాటర్ తాగు రా!",
+      "audio": "water_godavari.mp3"
+    },
+    {
+      "id": "break",
+      "text": "ఏరా ఇంకా కంప్యూటర్ ముందే కూర్చున్నావా, లేసి కాసేపు నడువు రా!",
+      "audio": "break_godavari.mp3"
+    },
+    {
+      "id": "posture",
+      "text": "ఒరేయ్, నడుము నిటారుగా పెట్టుకో, వంగి కూర్చోవద్దు!",
+      "audio": "posture_godavari.mp3"
+    },
+    {
+      "id": "cheer",
+      "text": "ఏంటి డల్ అయిపోయావ్, పని బ్రేక్ ఇచ్చి చాయ్ తాగు పో!",
+      "audio": "cheer_godavari.mp3"
+    }
+  ],
+  "japanese_reminders_list": [
+    {
+      "id": "water_jp",
+      "text": "Ehh?! Rey labbe, era em sethannav... poi water thaagu ra! Ganbatte ne!",
+      "audio": "water_japanese.mp3"
+    },
+    {
+      "id": "break_jp",
+      "text": "Ara ara~ you have been working so long! Take a cute break, baka!",
+      "audio": "break_japanese.mp3"
+    },
+    {
+      "id": "posture_jp",
+      "text": "Oi oi! Sit straight! Posture check desu yo!",
+      "audio": "posture_japanese.mp3"
+    },
+    {
+      "id": "cheer_jp",
+      "text": "Sugoi! You are doing amazing today! Ganbatte!",
+      "audio": "cheer_japanese.mp3"
+    },
+    {
+      "id": "nani_jp",
+      "text": "Nani?! Inka computer mundhe unnav? Chotto walk chesi chaye thaagu ra!",
+      "audio": "nani_japanese.mp3"
+    },
+    {
+      "id": "yamete_jp",
+      "text": "Yamete kudasai! Don't slouch your back like that! Sit straight, baka!",
+      "audio": "yamete_japanese.mp3"
+    }
+  ]
 }
