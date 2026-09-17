@@ -83,6 +83,23 @@ function playRomanticArpeggio() {
   });
 }
 
+function playSparkleSound() {
+  const notes = [880.00, 1174.66, 1396.91, 1760.00];
+  notes.forEach((note, idx) => {
+    setTimeout(() => playRomanticChime(note, 0.20), idx * 65);
+  });
+}
+
+function playBlushSound() {
+  playRomanticChime(622.25, 0.18);
+  setTimeout(() => playRomanticChime(739.99, 0.28), 90);
+}
+
+function playSleepySound() {
+  playRomanticChime(523.25, 0.26);
+  setTimeout(() => playRomanticChime(392.00, 0.38), 140);
+}
+
 // --- Floating Falling Petals Canvas ---
 function initPetalsCanvas() {
   const canvas = document.getElementById('petalsCanvas');
@@ -363,8 +380,14 @@ class CompanionManager {
       const pick = payoffs[(this.boopCount - 1) % payoffs.length];
       this.triggerReaction(pick, 750);
       if (this.soundEnabled) {
-        const scale = [523.25, 587.33, 659.25, 783.99, 880];
-        playRomanticChime(scale[(this.boopCount - 1) % scale.length], 0.22);
+        if (pick === 'sparkle') {
+          playSparkleSound();
+        } else if (pick === 'bashful') {
+          playBlushSound();
+        } else {
+          const scale = [523.25, 587.33, 659.25, 783.99, 880];
+          playRomanticChime(scale[(this.boopCount - 1) % scale.length], 0.22);
+        }
       }
     }
   }
@@ -388,7 +411,7 @@ class CompanionManager {
       e.stopPropagation();
       this.triggerReaction('bashful', 1200);
       this.showBubble("A gift for me? Thank you so much.");
-      playRomanticChime(659.25, 0.4);
+      playBlushSound();
       const rect = e.target.getBoundingClientRect();
       spawnHeartBurst(rect.left + rect.width / 2, rect.top, 8);
     });

@@ -7,6 +7,9 @@ Includes Windows Startup toggle, dynamic Character Sheet swapping, and playful i
 
 import os
 import sys
+import io
+import wave
+import struct
 import json
 import math
 import time
@@ -154,8 +157,140 @@ if not os.path.exists(ASSETS_DIR):
 DEFAULT_DIRECTIONS_PATH = os.path.join(ASSETS_DIR, "mascot-directions.png")
 DEFAULT_REACTIONS_PATH = os.path.join(ASSETS_DIR, "mascot-reactions.png")
 ICON_PATH = os.path.join(ASSETS_DIR, "icon.ico")
+SOUNDS_DIR = os.path.join(ASSETS_DIR, "sounds")
+if not os.path.exists(SOUNDS_DIR):
+    SOUNDS_DIR = os.path.join(EXE_DIR, "assets", "sounds")
 CHARACTERS_DIR = os.path.join(EXE_DIR, "characters")
 CONFIG_PATH = os.path.join(EXE_DIR, "mascot_config.json")
+
+# WinMM Multimedia Sound Setup
+winmm = ctypes.windll.winmm
+SND_ASYNC = 0x0001
+SND_NODEFAULT = 0x0002
+SND_MEMORY = 0x0004
+try:
+    winmm.PlaySoundA.argtypes = [ctypes.c_char_p, wintypes.HMODULE, wintypes.DWORD]
+    winmm.PlaySoundA.restype = wintypes.BOOL
+except Exception:
+    pass
+
+class SoundEngine:
+    """High-fidelity synthesized and file-backed audio engine matching the website companion."""
+    def __init__(self, sounds_dir=None):
+        self.sounds_dir = sounds_dir
+        self.cache = {}
+        self._init_sounds()
+
+    def _synth_multi(self, notes, sample_rate=44100, volume=0.35):
+        total_duration = max(st + dur for st, freq, dur in notes)
+        num_samples = int(sample_rate * total_duration)
+        buffer = [0.0] * num_samples
+        for st, freq, dur in notes:
+            start_idx = int(st * sample_rate)
+            note_samples = int(dur * sample_rate)
+            phase = 0.0
+            decay = 5.4 / dur
+            for i in range(note_samples):
+                idx = start_idx + i
+                if idx >= num_samples:
+                    break
+                t = i / sample_rate
+                f = freq * (1.04 ** (t / dur))
+                phase += 2.0 * math.pi * f / sample_rate
+                env = volume * math.exp(-t * decay)
+                if i >= note_samples - 100:
+                    env *= (note_samples - 1 - i) / 100.0
+                p = (phase / (2.0 * math.pi)) % 1.0
+                tri = 4.0 * abs(p - 0.5) - 1.0
+                buffer[idx] += env * tri
+        frames = bytearray()
+        for s in buffer:
+            val = int(max(-1.0, min(1.0, s)) * 32767.0)
+            frames += struct.pack('<h', val)
+        buf = io.BytesIO()
+        with wave.open(buf, 'wb') as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)
+            wf.setframerate(sample_rate)
+            wf.writeframes(frames)
+        return buf.getvalue()
+
+    def _init_sounds(self):
+        scale = [523.25, 587.33, 659.25, 783.99, 880.00]
+        for i, freq in enumerate(scale):
+            key = f"boop_{i+1}"
+            path = os.path.join(self.sounds_dir, f"{key}.wav") if self.sounds_dir else None
+            if path and os.path.isfile(path):
+                try:
+                    with open(path, "rb") as f:
+                        self.cache[key] = f.read()
+                except Exception:
+                    self.cache[key] = self._synth_multi([(0.0, freq, 0.26)])
+            else:
+                self.cache[key] = self._synth_multi([(0.0, freq, 0.26)])
+
+        # Dizzy sound (440Hz -> 350Hz)
+        dizzy_path = os.path.join(self.sounds_dir, "dizzy.wav") if self.sounds_dir else None
+        if dizzy_path and os.path.isfile(dizzy_path):
+            try:
+                with open(dizzy_path, "rb") as f:
+                    self.cache["dizzy"] = f.read()
+            except Exception:
+                self.cache["dizzy"] = self._synth_multi([(0.0, 440.0, 0.20), (0.10, 350.0, 0.25)])
+        else:
+            self.cache["dizzy"] = self._synth_multi([(0.0, 440.0, 0.20), (0.10, 350.0, 0.25)])
+
+        # Teleport sound (chime arpeggio)
+        tele_path = os.path.join(self.sounds_dir, "teleport.wav") if self.sounds_dir else None
+        if tele_path and os.path.isfile(tele_path):
+            try:
+                with open(tele_path, "rb") as f:
+                    self.cache["teleport"] = f.read()
+            except Exception:
+                self.cache["teleport"] = self._synth_multi([(0.0, 523.25, 0.20), (0.09, 783.99, 0.22), (0.18, 1046.50, 0.30)])
+        else:
+            self.cache["teleport"] = self._synth_multi([(0.0, 523.25, 0.20), (0.09, 783.99, 0.22), (0.18, 1046.50, 0.30)])
+
+        # Sparkle sound (fairy crystal shimmer)
+        sparkle_path = os.path.join(self.sounds_dir, "sparkle.wav") if self.sounds_dir else None
+        if sparkle_path and os.path.isfile(sparkle_path):
+            try:
+                with open(sparkle_path, "rb") as f:
+                    self.cache["sparkle"] = f.read()
+            except Exception:
+                self.cache["sparkle"] = self._synth_multi([(0.00, 880.0, 0.18), (0.06, 1174.66, 0.18), (0.12, 1396.91, 0.20), (0.18, 1760.0, 0.25)])
+        else:
+            self.cache["sparkle"] = self._synth_multi([(0.00, 880.0, 0.18), (0.06, 1174.66, 0.18), (0.12, 1396.91, 0.20), (0.18, 1760.0, 0.25)])
+
+        # Blush sound (warm flutter)
+        blush_path = os.path.join(self.sounds_dir, "blush.wav") if self.sounds_dir else None
+        if blush_path and os.path.isfile(blush_path):
+            try:
+                with open(blush_path, "rb") as f:
+                    self.cache["blush"] = f.read()
+            except Exception:
+                self.cache["blush"] = self._synth_multi([(0.00, 622.25, 0.18), (0.09, 739.99, 0.28)])
+        else:
+            self.cache["blush"] = self._synth_multi([(0.00, 622.25, 0.18), (0.09, 739.99, 0.28)])
+
+        # Sleepy sound (soothing lullaby)
+        sleepy_path = os.path.join(self.sounds_dir, "sleepy.wav") if self.sounds_dir else None
+        if sleepy_path and os.path.isfile(sleepy_path):
+            try:
+                with open(sleepy_path, "rb") as f:
+                    self.cache["sleepy"] = f.read()
+            except Exception:
+                self.cache["sleepy"] = self._synth_multi([(0.00, 523.25, 0.25), (0.14, 392.00, 0.35)])
+        else:
+            self.cache["sleepy"] = self._synth_multi([(0.00, 523.25, 0.25), (0.14, 392.00, 0.35)])
+
+    def play(self, sound_name):
+        data = self.cache.get(sound_name)
+        if data:
+            try:
+                winmm.PlaySoundA(data, 0, SND_MEMORY | SND_ASYNC | SND_NODEFAULT)
+            except Exception:
+                pass
 
 REG_RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 APP_REG_NAME = "CuteDesktopMascot"
@@ -276,6 +411,7 @@ class NativeMascot:
         self.reaction = None
         self.sector = -1
         self.sound_enabled = True
+        self.sound_engine = SoundEngine(SOUNDS_DIR)
         self.always_on_top = True
         self.teleport_enabled = True
         self.last_topmost_check = 0
@@ -499,13 +635,19 @@ class NativeMascot:
             self.reaction = 'dizzy'
             self.reaction_until = now + 1.2
             if self.sound_enabled:
-                threading.Thread(target=lambda: [winsound.Beep(420, 100), winsound.Beep(320, 100), winsound.Beep(450, 120)], daemon=True).start()
+                self.sound_engine.play('dizzy')
         else:
-            self.reaction = PAYOFFS[(self.boop_count - 1) % len(PAYOFFS)]
+            payoff = PAYOFFS[(self.boop_count - 1) % len(PAYOFFS)]
+            self.reaction = payoff
             self.reaction_until = now + 0.65
             if self.sound_enabled:
-                freq = int(520 + (self.boop_count - 1) * 90)
-                threading.Thread(target=lambda: winsound.Beep(freq, 70), daemon=True).start()
+                if payoff == 'sparkle':
+                    self.sound_engine.play('sparkle')
+                elif payoff == 'bashful':
+                    self.sound_engine.play('blush')
+                else:
+                    boop_idx = ((self.boop_count - 1) % 5) + 1
+                    self.sound_engine.play(f'boop_{boop_idx}')
                 
         # Squash animation timing
         self.squash_until = now + 0.40
@@ -558,7 +700,7 @@ class NativeMascot:
                 self.reaction = random.choice(PAYOFFS)
                 self.reaction_until = now + 1.2
                 if self.sound_enabled:
-                    threading.Thread(target=lambda: [winsound.Beep(520, 60), winsound.Beep(780, 80)], daemon=True).start()
+                    self.sound_engine.play('teleport')
         elif self.teleport_state == 2:
             # Stage 2: Pop back up with joyful elastic bounce
             progress = 1.0 - max(0.0, (self.teleport_until - now) / 0.45)
@@ -636,6 +778,8 @@ class NativeMascot:
                 elif idle_action == 'bashful':
                     self.reaction = 'bashful'
                     self.reaction_until = now + 0.65
+                    if self.sound_enabled:
+                        self.sound_engine.play('blush')
                 need_update = True
 
             # Tracking calculations (always tracks cursor accurately across 360 degrees)
@@ -766,6 +910,8 @@ class NativeMascot:
         elif cmd == 104: self.set_size(300)
         elif cmd == 201:
             self.sound_enabled = not self.sound_enabled
+            if self.sound_enabled:
+                self.sound_engine.play('boop_3')
             self.save_config()
         elif cmd == 202:
             self.always_on_top = not self.always_on_top
@@ -826,7 +972,7 @@ def wnd_proc(hwnd, msg, wparam, lparam):
             user32.GetCursorPos(ctypes.byref(pt))
             dx = pt.x - mascot_app.drag_start_x
             dy = pt.y - mascot_app.drag_start_y
-            if math.hypot(dx, dy) > 4:
+            if math.hypot(dx, dy) > 8:
                 mascot_app.is_dragging = True
                 hwnd_top = HWND_TOPMOST if mascot_app.always_on_top else HWND_NOTOPMOST
                 user32.SetWindowPos(
