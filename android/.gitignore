@@ -1,0 +1,14 @@
+# Gradle cache - stays on D: drive, never commit
+.gradle-cache/
+
+# Build outputs
+app/build/
+
+# Android Studio local config
+*.iml
+.idea/
+local.properties
+
+# OS
+.DS_Store
+Thumbs.db

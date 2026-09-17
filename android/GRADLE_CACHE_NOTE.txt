@@ -1,0 +1,2 @@
+# Redirect Gradle user home to D: drive to protect C: drive
+export GRADLE_USER_HOME=D:\Desktop-apps\Desktop-Mascot\android\.gradle-cache
