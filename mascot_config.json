@@ -1,0 +1,7 @@
+{
+  "character": "mascot",
+  "size": 300,
+  "sound_enabled": true,
+  "always_on_top": true,
+  "teleport_enabled": false
+}

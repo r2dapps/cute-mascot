@@ -1,0 +1,19 @@
+# Reference repository (per user request)
+reference-page-mascot/
+
+# Python cache & build outputs
+__pycache__/
+*.pyc
+*.pyo
+build/
+dist/
+*.spec
+
+# System & editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Separate Spiderman project folder
+spiderman_mascot/
