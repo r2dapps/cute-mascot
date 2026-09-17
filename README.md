@@ -2,45 +2,50 @@
   <img src="assets/icon.png" width="160" height="160" alt="Cute Desktop Mascot Icon" style="border-radius: 50%; box-shadow: 0 8px 32px rgba(255, 105, 180, 0.3);">
 </p>
 
-# 🎀 Cute Desktop Mascot (v1.0.0)
+# 🎀 Cute Desktop & Mobile Mascot (v1.3.0)
 
-An interactive, transparent desktop mascot for Windows inspired by [nilbuild/page-mascot](https://github.com/nilbuild/page-mascot), featuring your custom character (cute chibi girl with stylish spectacles, wavy dark hair, pearl hairpin, and pastel pink embroidered kurti), hot-swappable character sheets, and playful idle animations.
+An interactive, transparent mascot for Windows Desktop and Android Mobile, featuring customizable characters (cute anime girl with spectacles & kurti, companion guy, fox chibi), talking reminders in Godavari Telugu and Japanese anime voices with phoneme lip-sync, hot-swappable character sheets, and playful idle animations.
 
-[![Release](https://img.shields.io/badge/release-v1.0.0-pink.svg)](https://github.com/r2dapps/cute-mascot/releases)
+[![Release](https://img.shields.io/badge/release-v1.3.0-pink.svg)](https://github.com/r2dapps/cute-mascot/releases)
+[![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-Interactive%20Showcase-ff69b4.svg)](https://r2dapps.github.io/cute-mascot/web/)
+[![Android](https://img.shields.io/badge/Android-APK%20Ready-green.svg)](https://github.com/r2dapps/cute-mascot/releases/latest/download/CuteMascot.apk)
+[![Windows](https://img.shields.io/badge/Windows-EXE%20Ready-blue.svg)](https://github.com/r2dapps/cute-mascot/releases/latest/download/DesktopMascot.exe)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Pages](https://img.shields.io/badge/Live%20Showcase-GitHub%20Pages-blue.svg)](https://r2dapps.github.io/cute-mascot/)
+
+---
+
+## 📦 Downloads & Live Demo (v1.3.0)
+
+| Platform | Link / Download | Features |
+| :--- | :--- | :--- |
+| 🌐 **Live Web Demo** | [**Open Web Companion**](https://r2dapps.github.io/cute-mascot/web/) | Zero install, interactive browser mascot, mouse tracking, squish boop sounds, live character switching |
+| 📱 **Android Mobile** | [**CuteMascot.apk**](https://github.com/r2dapps/cute-mascot/releases/download/v1.3.0/CuteMascot.apk) *(20.4 MB)* | Floating overlay, real-time size slider, SoundPool boops, full-screen touch tracking, Gyro tilt, health reminders |
+| 💻 **Windows Desktop** | [**DesktopMascot.exe**](https://github.com/r2dapps/cute-mascot/releases/download/v1.3.0/DesktopMascot.exe) *(63.5 MB)* | Standalone Win32 per-pixel transparency, global mouse tracking, Telugu/Japanese voice reminders, lip-sync, tray controls |
 
 ---
 
 ## ✨ Features
 
-- **🖥️ True Desktop Floating Window**: Native Win32 `UpdateLayeredWindow` with per-pixel alpha transparency. Frameless, zero white background box, always floating on your desktop or over active windows.
-- **👀 Global Cursor Tracking**: Head smoothly turns and follows your mouse anywhere across any monitor or application (VS Code, Chrome, games, etc.) at 33–60 FPS.
-- **💖 Interactive Boops & Clicks**:
-  - Click to boop! She squishes down with rubbery bounce physics and cycles through joyful reactions (hearts, sparkles, blushing).
-  - Rapid click 4+ times in a row to make her dizzy with cute swirl eyes and sound cues.
+- **🖥️ True Desktop Floating Window**: Native Win32 `UpdateLayeredWindow` with per-pixel alpha transparency. Frameless, zero background box, always floating on your desktop or over active windows.
+- **📱 Android Floating Overlay**: Floats on top of all phone apps using clean overlay permissions. Full-screen in-app finger tracking and gyroscope motion tilt tracking.
+- **🗣️ Talking Reminders & Voice Notes**:
+  - Periodically reminds you to drink water, stretch, correct posture, and smile.
+  - Dual voice modes: **Godavari Telugu** (sweet, caring) and **Japanese Anime** (cute, soft).
+  - Synchronized real-time phoneme lip-sync (`A`, `E`, `I`, `O`, `U`, `M`).
+- **👀 Global Cursor & Touch Tracking**: Head smoothly turns and follows your cursor or touch anywhere across your screens.
+- **💖 Interactive Boops & Audio Engine**:
+  - Tap or click to boop! Rubbery squish bounce physics with cheerful sound effects.
+  - Multi-layer audio playback with embedded dialogue fallbacks.
 - **🌸 Idle Peeking & Playful Behaviors**:
-  - When your mouse is stationary for a few seconds, she playfully interacts on her own!
-  - Does natural double-blinks, peeks around with cute winks, glances left and right, and gives playful micro-hops.
-- **🎲 Random Disappear & Reappear (Teleportation)**:
-  - Every few minutes (or on demand from the menu), she squishes down, disappears, and pops back up at a new random safe spot on your screen with a joyful reaction!
-  - Can be toggled on/off or triggered immediately from the right-click menu.
-- **✋ Draggable Anywhere**: Left-click and drag her to any position on your desktop.
-- **🎭 Hot-Swappable Character Sheets**:
-  - Switch characters on the fly directly from the right-click menu!
-  - Drop any character folder with `directions.png` and `reactions.png` into `characters/` and it automatically appears in the menu.
-  - Automatically remembers your selected character, size, and preferences in `mascot_config.json`.
-- **🚀 Run on Windows Startup**: Enable or disable launching automatically when Windows boots up via a simple right-click toggle.
-- **⚙️ Native Right-Click Context Menu (Fixed & Always Visible)**:
-  - **📏 Size**: Small (140px), Normal (180px), Large (240px), Giant (300px)
-  - **🎭 Switch Character ▶**: List of all installed characters + `📂 Open Characters Folder...`
-  - **🎲 Teleport Randomly**: Instantly disappear and pop up at a new spot
-  - **✨ Auto-Teleport (On / Off)**: Toggle random screen teleportation
-  - **🔊 Sound Effects**: Toggle boop sound cues (On / Off)
-  - **📌 Always on Top**: Keep mascot above all active windows and taskbars
-  - **🚀 Run on Startup**: Toggle automatic Windows startup (via user registry)
-  - **📍 Reset to Corner**: Snap back to bottom-right corner
-  - **❌ Exit Mascot**: Close the application
+  - Natural blinks, playful peeks, cute winks, and idle animations.
+- **🎭 Multi-Character Roster**:
+  - **Mascot**: Classic Fox Chibi companion.
+  - **Chibi Girl**: High-detail anime girl with spectacles, wavy dark hair, pearl hairpin, and pink kurti.
+  - **Companion Guy**: Stylized partner with curly hair and glasses, complete with full 9-reaction sprite sheet.
+  - Hot-swappable on both desktop and mobile!
+- **⚙️ Native Controls & Customization**:
+  - Desktop: Tray context menu with size presets, sound toggle, teleport, reminder trigger, startup launch.
+  - Android: Modern settings dashboard with real-time size slider (100–260 dp), preset chips, and sound effects test.
 
 ---
 
@@ -81,7 +86,7 @@ This repository is pre-configured with a GitHub Actions workflow for zero-config
 4. Under **Build and deployment**:
    - **Source**: Select **GitHub Actions** (it will automatically use `.github/workflows/deploy-pages.yml`).
 5. Your live interactive mascot showcase will be published at:
-   **`https://r2dapps.github.io/cute-mascot/`**
+   **`https://r2dapps.github.io/cute-mascot/web/`**
 
 ---
 
