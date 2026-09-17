@@ -23,6 +23,8 @@ class SensorTracker(
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private var gyroSensor: Sensor? = null
 
+    var invertTilt: Boolean = false
+
     // Gyro integration state
     private var yawDeg = 0f   // left-right tilt
     private var pitchDeg = 0f // up-down tilt
@@ -40,8 +42,9 @@ class SensorTracker(
             yawDeg   = (yawDeg   + Math.toDegrees(event.values[1].toDouble()).toFloat() * dt).coerceIn(-90f, 90f)
             pitchDeg = (pitchDeg + Math.toDegrees(event.values[0].toDouble()).toFloat() * dt).coerceIn(-45f, 45f)
 
-            // Convert tilt angles to virtual dx/dy for direction calc
-            onDirectionAngle(yawDeg * 2f, -pitchDeg * 2f)
+            // Convert tilt angles to virtual dx/dy for direction calc (natural direction by default, invertable via UI)
+            val mult = if (invertTilt) 1f else -1f
+            onDirectionAngle(yawDeg * 2.5f * mult, pitchDeg * 2.5f * mult)
         }
     }
 

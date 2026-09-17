@@ -1,14 +1,14 @@
 {
   "character": "mascot",
-  "size": 180,
+  "size": 240,
   "sound_enabled": true,
   "always_on_top": true,
-  "teleport_enabled": true,
+  "teleport_enabled": false,
   "voice_enabled": true,
-  "voice_type": "godavari",
+  "voice_type": "japanese",
   "voice_pitch": "+10Hz",
   "voice_rate": "+8%",
-  "reminders_enabled": true,
+  "reminders_enabled": false,
   "reminder_interval_min": 30,
   "reminders_list": [
     {

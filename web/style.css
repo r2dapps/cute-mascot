@@ -688,3 +688,43 @@ input:checked + .slider:before {
     font-size: 0.85rem;
   }
 }
+
+/* Skin Switcher Bar */
+.skin-switcher-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.skin-label {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.skin-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 182, 193, 0.25);
+  color: var(--text-main);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.skin-chip:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: var(--rose-primary);
+}
+
+.skin-chip.active {
+  background: linear-gradient(135deg, #ff7ea6 0%, #e04b7b 100%);
+  border-color: #ff7ea6;
+  color: #ffffff;
+  box-shadow: 0 4px 14px var(--rose-glow);
+}
+

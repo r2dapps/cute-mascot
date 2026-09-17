@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "com.r2dapps.cutemascot"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.r2dapps.cutemascot"
         minSdk = 26          // Android 8.0 Oreo (TYPE_APPLICATION_OVERLAY support)
-        targetSdk = 33
-        versionCode = 12     // v1.2
-        versionName = "1.2.0"
+        targetSdk = 34
+        versionCode = 14     // v1.3.0
+        versionName = "1.3.0"
     }
 
     buildTypes {

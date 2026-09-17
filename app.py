@@ -385,15 +385,27 @@ def discover_all_characters():
     ]
     seen_ids = {"mascot"}
 
-    # 1. Custom characters folder
-    if os.path.isdir(CHARACTERS_DIR):
-        for entry in sorted(os.listdir(CHARACTERS_DIR)):
-            folder = os.path.join(CHARACTERS_DIR, entry)
+    # 1. Custom characters folder (check PyInstaller bundle dir first, then external exe dir)
+    char_dirs = []
+    bundle_chars = os.path.join(BUNDLE_DIR, "characters")
+    if os.path.isdir(bundle_chars):
+        char_dirs.append(bundle_chars)
+    if os.path.isdir(CHARACTERS_DIR) and os.path.abspath(CHARACTERS_DIR) != os.path.abspath(bundle_chars):
+        char_dirs.append(CHARACTERS_DIR)
+
+    for cdir in char_dirs:
+        for entry in sorted(os.listdir(cdir)):
+            folder = os.path.join(cdir, entry)
             if os.path.isdir(folder) and entry.lower() not in seen_ids:
                 d_file = os.path.join(folder, "directions.png")
                 r_file = os.path.join(folder, "reactions.png")
                 if os.path.isfile(d_file):
-                    name = entry.replace("-", " ").replace("_", " ").title()
+                    if entry.lower() == "chibi":
+                        name = "Chibi Girl (Restored Anime Style)"
+                    elif entry.lower() == "guy":
+                        name = "Companion Guy (Curly & Glasses)"
+                    else:
+                        name = entry.replace("-", " ").replace("_", " ").title()
                     custom_chars.append({
                         "id": entry,
                         "name": name,
@@ -623,7 +635,7 @@ class NativeMascot:
         self.direction = 'center'
         self.reaction = None
         self.sector = -1
-        self.sound_enabled = True
+        self.sound_enabled = False
         self.sound_engine = SoundEngine(SOUNDS_DIR)
         self.always_on_top = True
         self.teleport_enabled = True
@@ -673,7 +685,8 @@ class NativeMascot:
         self.voice_type = "godavari"
         self.voice_pitch = "+10Hz"
         self.voice_rate = "+8%"
-        self.reminders_enabled = True
+        self.voice_enabled = False
+        self.reminders_enabled = False
         self.reminder_interval_min = 30
         self.last_reminder_time = now
         self.reminders_list = []
@@ -698,15 +711,33 @@ class NativeMascot:
                     self.always_on_top = data.get("always_on_top", True)
                     self.teleport_enabled = data.get("teleport_enabled", True)
                     self.current_char_id = data.get("character", "mascot")
+                    self.voice_enabled = data.get("voice_enabled", False)
                     self.voice_type = data.get("voice_type", "godavari")
                     self.voice_pitch = data.get("voice_pitch", "+10Hz")
                     self.voice_rate = data.get("voice_rate", "+8%")
-                    self.reminders_enabled = data.get("reminders_enabled", True)
+                    self.reminders_enabled = data.get("reminders_enabled", False)
                     self.reminder_interval_min = data.get("reminder_interval_min", 30)
                     self.reminders_list = data.get("reminders_list", [])
                     self.japanese_reminders_list = data.get("japanese_reminders_list", [])
         except Exception as e:
             print("Config load error:", e)
+
+        if not self.reminders_list:
+            self.reminders_list = [
+                {"id": "water", "text": "రేయ్ లబ్బే, ఏరా ఏం సేత్తన్నావ్, పోయి వాటర్ తాగు రా!", "audio": "water_godavari.mp3"},
+                {"id": "break", "text": "ఏరా ఇంకా కంప్యూటర్ ముందే కూర్చున్నావా, లేసి కాసేపు నడువు రా!", "audio": "break_godavari.mp3"},
+                {"id": "posture", "text": "ఒరేయ్, నడుము నిటారుగా పెట్టుకో, వంగి కూర్చోవద్దు!", "audio": "posture_godavari.mp3"},
+                {"id": "cheer", "text": "ఏంటి డల్ అయిపోయావ్, పని బ్రేక్ ఇచ్చి చాయ్ తాగు పో!", "audio": "cheer_godavari.mp3"}
+            ]
+        if not self.japanese_reminders_list:
+            self.japanese_reminders_list = [
+                {"id": "water_jp", "text": "Ehh?! Rey labbe, era em sethannav... poi water thaagu ra! Ganbatte ne!", "audio": "water_japanese.mp3"},
+                {"id": "break_jp", "text": "Ara ara~ you have been working so long! Take a cute break, baka!", "audio": "break_japanese.mp3"},
+                {"id": "posture_jp", "text": "Oi oi! Sit straight! Posture check desu yo!", "audio": "posture_japanese.mp3"},
+                {"id": "cheer_jp", "text": "Sugoi! You are doing amazing today! Ganbatte!", "audio": "cheer_japanese.mp3"},
+                {"id": "nani_jp", "text": "Nani?! Inka computer mundhe unnav? Chotto walk chesi chaye thaagu ra!", "audio": "nani_japanese.mp3"},
+                {"id": "yamete_jp", "text": "Yamete kudasai! Don't slouch your back like that! Sit straight, baka!", "audio": "yamete_japanese.mp3"}
+            ]
 
     def save_config(self):
         try:
@@ -716,7 +747,7 @@ class NativeMascot:
                 "sound_enabled": self.sound_enabled,
                 "always_on_top": self.always_on_top,
                 "teleport_enabled": self.teleport_enabled,
-                "voice_enabled": True,
+                "voice_enabled": self.voice_enabled,
                 "voice_type": self.voice_type,
                 "voice_pitch": self.voice_pitch,
                 "voice_rate": self.voice_rate,
@@ -1135,12 +1166,16 @@ class NativeMascot:
                 vc_path = os.path.join(VOICES_CACHE_DIR, audio_name)
                 if os.path.isfile(vc_path):
                     audio_path = vc_path
+                else:
+                    ext_vc = os.path.join(EXE_DIR, "assets", "voices_cache", audio_name)
+                    if os.path.isfile(ext_vc):
+                        audio_path = ext_vc
                     
         # Priority 2: If no pre-rendered audio found, synthesize dynamically via edge_tts
         if not audio_path:
             voice_id = "te-IN-ShrutiNeural" if self.voice_type == "godavari" else "ja-JP-NanamiNeural"
-            pitch = self.voice_pitch if self.voice_type == "godavari" else "+14Hz"
-            rate = self.voice_rate if self.voice_type == "godavari" else "+10%"
+            pitch = self.voice_pitch if self.voice_type == "godavari" else "+22Hz"   # Higher = more anime feminine
+            rate  = self.voice_rate  if self.voice_type == "godavari" else "-8%"    # Slower = more sensual/deliberate
             
             cache_key = hashlib.md5(f"{text}_{voice_id}_{pitch}_{rate}".encode("utf-8")).hexdigest()
             dyn_path = os.path.join(VOICES_CACHE_DIR, f"dyn_{cache_key}.mp3")
@@ -1156,28 +1191,33 @@ class NativeMascot:
             if os.path.isfile(dyn_path):
                 audio_path = dyn_path
 
-        # Determine duration & play via MCI
+        # Determine duration & play via MCI with PowerShell MediaPlayer fallback
         duration_sec = 3.5
         if audio_path:
             alias = f"spk_{int(time.time()*1000)}"
             p = os.path.abspath(audio_path)
             try:
-                winmm.mciSendStringW(f'open "{p}" type mpegvideo alias {alias}', None, 0, 0)
-                buf = ctypes.create_unicode_buffer(64)
-                winmm.mciSendStringW(f'set {alias} time format milliseconds', None, 0, 0)
-                winmm.mciSendStringW(f'status {alias} length', buf, 64, 0)
-                try:
-                    duration_sec = max(1.5, float(buf.value) / 1000.0)
-                except Exception:
-                    duration_sec = 3.5
-                winmm.mciSendStringW(f'play {alias}', None, 0, 0)
-                
-                def _close_after(al=alias, d=duration_sec):
-                    time.sleep(d + 0.3)
-                    winmm.mciSendStringW(f'close {al}', None, 0, 0)
-                threading.Thread(target=_close_after, daemon=True).start()
+                res = winmm.mciSendStringW(f'open "{p}" type mpegvideo alias {alias}', None, 0, 0)
+                if res == 0:
+                    buf = ctypes.create_unicode_buffer(64)
+                    winmm.mciSendStringW(f'set {alias} time format milliseconds', None, 0, 0)
+                    winmm.mciSendStringW(f'status {alias} length', buf, 64, 0)
+                    try:
+                        duration_sec = max(1.5, float(buf.value) / 1000.0)
+                    except Exception:
+                        duration_sec = 3.5
+                    winmm.mciSendStringW(f'play {alias}', None, 0, 0)
+                    
+                    def _close_after(al=alias, d=duration_sec):
+                        time.sleep(d + 0.3)
+                        winmm.mciSendStringW(f'close {al}', None, 0, 0)
+                    threading.Thread(target=_close_after, daemon=True).start()
+                else:
+                    cmd = f'Add-Type -AssemblyName PresentationCore; $p = New-Object System.Windows.Media.MediaPlayer; $p.Open([System.Uri]"{p}"); $p.Play(); Start-Sleep -Seconds 4; $p.Close()'
+                    subprocess.Popen(["powershell", "-NoProfile", "-NonInteractive", "-Command", cmd],
+                                     creationflags=0x08000000)
             except Exception as e:
-                print("MCI play error:", e)
+                print("Audio play error:", e)
 
         # Set speaking animation state
         self.is_speaking = True
@@ -1283,6 +1323,7 @@ class NativeMascot:
             # 5. Toggles
             sound_flag = MF_CHECKED if self.sound_enabled else MF_UNCHECKED
             user32.AppendMenuW(hmenu, MF_STRING | sound_flag, 201, "🔊 Sound Effects")
+            user32.AppendMenuW(hmenu, MF_STRING, 208, "🎵 Test Boop Sound")
             
             top_flag = MF_CHECKED if self.always_on_top else MF_UNCHECKED
             user32.AppendMenuW(hmenu, MF_STRING | top_flag, 202, "📌 Always on Top")
@@ -1318,6 +1359,8 @@ class NativeMascot:
             if self.sound_enabled:
                 self.sound_engine.play('boop_3')
             self.save_config()
+        elif cmd == 208:
+            self.sound_engine.play('boop_1')
         elif cmd == 202:
             self.always_on_top = not self.always_on_top
             hwnd_top = HWND_TOPMOST if self.always_on_top else HWND_NOTOPMOST

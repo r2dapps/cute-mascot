@@ -67,6 +67,16 @@
       <div class="stage-instructions">
         <span>Click to boop &bull; Rapid click four times for dizzy reaction &bull; Notice corner companion watching too</span>
       </div>
+
+      <!-- Live Style Skin Switcher -->
+      <div class="skin-switcher-bar">
+        <span class="skin-label">Style Skin:</span>
+        <button type="button" class="skin-chip active" id="skinChibiBtn" data-skin="chibi">Chibi Girl (Restored Style)</button>
+        <button type="button" class="skin-chip" id="skinMascotBtn" data-skin="mascot">Fox Mascot (Classic)</button>
+        <button type="button" class="skin-chip" id="skinGuyBtn" data-skin="guy">Companion Guy (Curly &amp; Glasses)</button>
+        <button type="button" class="skin-chip" id="skinPixelBtn" data-skin="pixel">Pixel Art Priya (Retro 16-Bit)</button>
+        <button type="button" class="skin-chip" id="skinInkBtn" data-skin="ink">Ink Manga Priya (Sketch Style)</button>
+      </div>
     </section>
 
     <!-- Action Bar (Clean SVGs, Zero Emojis) -->
@@ -109,19 +119,37 @@
     <section class="info-grid">
       <!-- Windows Standalone App Card -->
       <div class="glass-card download-card">
-        <div class="card-badge">Windows Standalone Application</div>
+        <div class="card-badge">Windows Desktop (v1.2.1)</div>
         <h2>Desktop Floating Widget</h2>
         <p>
           Run her right on your Windows desktop above any program, taskbar, or game. 
-          Zero installation needed, pure Win32 per-pixel transparency, hot-swappable sheets, and startup toggle.
+          Zero installation needed, pure Win32 per-pixel transparency, hot-swappable sheets, Japanese anime &amp; Godavari Telugu talking reminders, lip-sync, and startup support.
         </p>
         <div class="cta-row">
-          <a href="https://github.com/r2dapps/cute-mascot/releases/tag/v1.0.0" target="_blank" class="download-btn">
+          <a href="releases/DesktopMascot.exe" download class="download-btn">
             <span>Download DesktopMascot.exe</span>
-            <small>v1.0.0 Standalone &bull; Zero Installation</small>
+            <small>v1.2.1 Standalone &bull; Windows 10/11 (64-bit)</small>
           </a>
           <a href="https://github.com/r2dapps/cute-mascot" target="_blank" class="secondary-btn">
             <span>Source Code on GitHub</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Android Mobile App Card -->
+      <div class="glass-card download-card">
+        <div class="card-badge" style="background: rgba(52, 211, 153, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.3);">Android Mobile (v1.2.1)</div>
+        <h2>Mobile Floating Mascot</h2>
+        <p>
+          Float your mascot over any phone app! Features full screen touch tracking (like this website), talking periodic health reminders, customized size, audio engine, and live style skins.
+        </p>
+        <div class="cta-row">
+          <a href="releases/CuteMascot.apk" download class="download-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);">
+            <span>Download CuteMascot.apk</span>
+            <small>v1.2.1 APK &bull; Android 8.0 to 14+ Ready</small>
+          </a>
+          <a href="javascript:void(0)" class="secondary-btn" id="btnToggleGuide">
+            <span>Android Setup &amp; 3-Dots Guide</span>
           </a>
         </div>
       </div>
@@ -154,6 +182,14 @@
               <span class="slider round"></span>
             </label>
           </div>
+        </div>
+
+        <div class="guide-box" id="installGuideBox" style="display: none; margin-top: 16px; padding: 14px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,215,0,0.25); border-radius: 12px; font-size: 0.84rem; line-height: 1.55;">
+          <strong style="color: #ffd700;">Android Sideload Instructions:</strong><br>
+          1. Tap <em>Install anyway</em> if Play Protect prompts.<br>
+          2. Open Cute Mascot &rarr; tap <em>1. Open App Info</em>.<br>
+          3. Tap 3 dots (⋮) in top-right &rarr; <em>Allow restricted settings</em>.<br>
+          4. Return &amp; tap <em>2. Enable Display Over Apps</em> &rarr; Done!
         </div>
       </div>
     </section>

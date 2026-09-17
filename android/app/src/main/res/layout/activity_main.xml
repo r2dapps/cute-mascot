@@ -1,59 +1,494 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="32dp"
-    android:background="#FF121622">
+    android:fillViewport="true"
+    android:background="#FF0F172A">
 
-    <ImageView
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:src="@mipmap/ic_launcher"
-        android:layout_marginBottom="24dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cute Desktop Mascot"
-        android:textColor="#FFFFFFFF"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="20dp">
 
-    <TextView
-        android:id="@+id/tvStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#FFCCCCCC"
-        android:textSize="14sp"
-        android:gravity="center"
-        android:layout_marginBottom="32dp"/>
+        <!-- App Logo Header -->
+        <ImageView
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:src="@mipmap/ic_launcher"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="10dp"/>
 
-    <Button
-        android:id="@+id/btnPermission"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Grant Overlay Permission"
-        android:backgroundTint="#FFFF69B4"
-        android:textColor="#FFFFFFFF"
-        android:layout_marginBottom="12dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cute Desktop Mascot"
+            android:textColor="#FFFFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp"/>
 
-    <Button
-        android:id="@+id/btnToggle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="✨ Show Mascot"
-        android:backgroundTint="#FF6B3FA0"
-        android:textColor="#FFFFFFFF"/>
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FF38BDF8"
+            android:textSize="13sp"
+            android:background="@drawable/bg_badge"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="v1.2.0 · r2dapps"
-        android:textColor="#FF888888"
-        android:textSize="11sp"
-        android:layout_marginTop="48dp"/>
+        <!-- Permission Instruction Box (shown when overlay not granted) -->
+        <LinearLayout
+            android:id="@+id/cardPermissionGuide"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
 
-</LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔒 Android Setup Required"
+                android:textColor="#FFFBBF24"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="If Android blocks permissions as 'Restricted setting':\n\n1️⃣ Tap Step 1 to open App Info\n2️⃣ Tap the 3 dots (⋮) in the top-right corner\n3️⃣ Tap 'Allow restricted settings' and enter PIN\n4️⃣ Tap Step 2 to allow Display Over Apps"
+                android:textColor="#FFE2E8F0"
+                android:textSize="13sp"
+                android:lineSpacingMultiplier="1.25"
+                android:layout_marginBottom="16dp"/>
+
+            <Button
+                android:id="@+id/btnStep1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1. Open App Info (Allow 3-Dots)"
+                android:backgroundTint="#FF3B82F6"
+                android:textColor="#FFFFFFFF"
+                android:layout_marginBottom="8dp"/>
+
+            <Button
+                android:id="@+id/btnStep2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2. Enable Display Over Other Apps"
+                android:backgroundTint="#FFEC4899"
+                android:textColor="#FFFFFFFF"/>
+
+        </LinearLayout>
+
+        <!-- Main Toggle Button -->
+        <Button
+            android:id="@+id/btnToggle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="✨ Show Mascot"
+            android:backgroundTint="#FF6366F1"
+            android:textColor="#FFFFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:padding="14dp"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- ============================================== -->
+        <!-- SETTINGS SECTION                               -->
+        <!-- ============================================== -->
+        <LinearLayout
+            android:id="@+id/layoutSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Card 1: Mascot Size & Scale (Overhauled with Slider & Presets) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="📏 Mascot Size"
+                        android:textColor="#FFA78BFA"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/tvSizeValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="160 dp · Medium"
+                        android:textColor="#FFA78BFA"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/bg_badge"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"/>
+                </LinearLayout>
+
+                <!-- Continuous Size Slider -->
+                <SeekBar
+                    android:id="@+id/seekSize"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="160"
+                    android:progress="60"
+                    android:progressTint="#FFA78BFA"
+                    android:thumbTint="#FFA78BFA"
+                    android:layout_marginBottom="14dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Quick Presets:"
+                    android:textColor="#FF94A3B8"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- Preset Chips Row 1 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <Button
+                        android:id="@+id/btnSize100"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:text="Mini (100)"
+                        android:textSize="11sp"
+                        android:background="@drawable/bg_chip"
+                        android:textColor="#FFFFFFFF"
+                        android:layout_marginEnd="6dp"/>
+
+                    <Button
+                        android:id="@+id/btnSize140"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:text="Small (140)"
+                        android:textSize="11sp"
+                        android:background="@drawable/bg_chip"
+                        android:textColor="#FFFFFFFF"
+                        android:layout_marginEnd="6dp"/>
+
+                    <Button
+                        android:id="@+id/btnSize180"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:text="Med (180)"
+                        android:textSize="11sp"
+                        android:background="@drawable/bg_chip"
+                        android:textColor="#FFFFFFFF"/>
+                </LinearLayout>
+
+                <!-- Preset Chips Row 2 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnSize220"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:text="Large (220)"
+                        android:textSize="11sp"
+                        android:background="@drawable/bg_chip"
+                        android:textColor="#FFFFFFFF"
+                        android:layout_marginEnd="6dp"/>
+
+                    <Button
+                        android:id="@+id/btnSize260"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:text="Jumbo (260)"
+                        android:textSize="11sp"
+                        android:background="@drawable/bg_chip"
+                        android:textColor="#FFFFFFFF"/>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Card 2: Character Skin Selector -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎀 Character Skin (5 Styles)"
+                    android:textColor="#FFF472B6"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp"/>
+
+                <RadioGroup
+                    android:id="@+id/rgSkin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <RadioButton
+                        android:id="@+id/rbSkinChibi"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🌸 Chibi Girl (Restored Anime Style)"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FFF472B6"
+                        android:paddingStart="6dp"
+                        android:layout_marginBottom="4dp"/>
+                    <RadioButton
+                        android:id="@+id/rbSkinMascot"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🦊 Fox Mascot (Classic Chibi Fox)"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FFF472B6"
+                        android:paddingStart="6dp"
+                        android:layout_marginBottom="4dp"/>
+                    <RadioButton
+                        android:id="@+id/rbSkinGuy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="👓 Companion Guy (Curly Hair &amp; Glasses)"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FFF472B6"
+                        android:paddingStart="6dp"
+                        android:layout_marginBottom="4dp"/>
+                    <RadioButton
+                        android:id="@+id/rbSkinPixel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="👾 Pixel Art Priya (Retro 16-Bit)"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FFF472B6"
+                        android:paddingStart="6dp"
+                        android:layout_marginBottom="4dp"/>
+                    <RadioButton
+                        android:id="@+id/rbSkinInk"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✒️ Ink Manga Priya (Sketch Style)"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FFF472B6"
+                        android:paddingStart="6dp"/>
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- Card 3: Touch Tracking & Boop Sound -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👆 Touch Tracking &amp; Sound"
+                    android:textColor="#FF34D399"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp"/>
+
+                <RadioGroup
+                    android:id="@+id/rgTracking"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp">
+                    <RadioButton
+                        android:id="@+id/rbTrackTouch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="👆 Screen Touch Tracking (In-App &amp; Direct)"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FF34D399"
+                        android:paddingStart="6dp"
+                        android:layout_marginBottom="4dp"/>
+                    <RadioButton
+                        android:id="@+id/rbTrackGyro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📱 Gyroscope Motion Tracking (Follows phone tilt)"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FF34D399"
+                        android:paddingStart="6dp"/>
+                </RadioGroup>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchInvertGyro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Invert Gyro Tilt Direction"
+                    android:textColor="#FFFFFFFF"
+                    android:checked="false"
+                    android:layout_marginBottom="12dp"/>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchSound"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Boop Chime Sounds"
+                    android:textColor="#FFFFFFFF"
+                    android:checked="false"
+                    android:layout_marginBottom="8dp"/>
+
+                <Button
+                    android:id="@+id/btnTestSound"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🎵 Test Boop Chime Sound"
+                    android:backgroundTint="#FF059669"
+                    android:textColor="#FFFFFFFF"/>
+
+            </LinearLayout>
+
+            <!-- Card 4: Voice & Reminders -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="16dp"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🗣️ Voice &amp; Talking Reminders"
+                    android:textColor="#FF60A5FA"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp"/>
+
+                <RadioGroup
+                    android:id="@+id/rgVoice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp">
+                    <RadioButton
+                        android:id="@+id/rbVoiceJapanese"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cute Anime Voice (Japanese)"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FF60A5FA"
+                        android:paddingStart="6dp"
+                        android:layout_marginBottom="4dp"/>
+                    <RadioButton
+                        android:id="@+id/rbVoiceGodavari"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Godavari Slang Voice (Telugu)"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FF60A5FA"
+                        android:paddingStart="6dp"/>
+                </RadioGroup>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchReminders"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Periodic Health Reminders"
+                    android:textColor="#FFFFFFFF"
+                    android:checked="false"
+                    android:layout_marginBottom="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Reminder Interval:"
+                    android:textColor="#FF94A3B8"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="6dp"/>
+
+                <RadioGroup
+                    android:id="@+id/rgInterval"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="14dp">
+                    <RadioButton
+                        android:id="@+id/rbInt15"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="15 min"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FF60A5FA"
+                        android:layout_marginEnd="16dp"/>
+                    <RadioButton
+                        android:id="@+id/rbInt30"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="30 min"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FF60A5FA"
+                        android:layout_marginEnd="16dp"/>
+                    <RadioButton
+                        android:id="@+id/rbInt60"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="60 min"
+                        android:textColor="#FFFFFFFF"
+                        android:buttonTint="#FF60A5FA"/>
+                </RadioGroup>
+
+                <Button
+                    android:id="@+id/btnTestVoice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🔊 Test Voice Reminder"
+                    android:backgroundTint="#FF2563EB"
+                    android:textColor="#FFFFFFFF"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="v1.3.0 · r2dapps"
+            android:textColor="#FF64748B"
+            android:textSize="11sp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="24dp"/>
+
+    </LinearLayout>
+</ScrollView>

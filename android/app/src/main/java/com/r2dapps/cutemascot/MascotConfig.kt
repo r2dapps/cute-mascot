@@ -1,31 +1,122 @@
 package com.r2dapps.cutemascot
 
 import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import org.json.JSONObject
 
 data class ReminderItem(val id: String, val text: String, val audio: String?)
 
 /**
- * Loads mascot_config.json from assets.
- * Same structure as desktop mascot_config.json.
+ * Loads mascot_config.json defaults from assets, overridden and persisted
+ * via Android SharedPreferences for full desktop feature parity.
  */
-class MascotConfig(context: Context) {
-    var voiceType = "godavari"
+class MascotConfig(private val context: Context) {
+
+    companion object {
+        const val ACTION_CONFIG_CHANGED = "com.r2dapps.cutemascot.CONFIG_CHANGED"
+        private const val PREFS_NAME = "cute_mascot_prefs"
+
+        const val KEY_CHARACTER = "character"
+        const val KEY_VOICE_TYPE = "voice_type"
+        const val KEY_VOICE_ENABLED = "voice_enabled"
+        const val KEY_MASCOT_SIZE = "mascot_size"
+        const val KEY_REMINDERS_ENABLED = "reminders_enabled"
+        const val KEY_REMINDER_INTERVAL = "reminder_interval_min"
+        const val KEY_SOUND_ENABLED = "sound_enabled"
+        const val KEY_TRACKING_MODE = "tracking_mode"
+        const val KEY_INVERT_GYRO = "invert_gyro"
+    }
+
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    var character: String
+        get() = prefs.getString(KEY_CHARACTER, defaultCharacter) ?: defaultCharacter
+        set(value) {
+            prefs.edit().putString(KEY_CHARACTER, value).apply()
+            notifyChange()
+        }
+
+    var voiceType: String
+        get() = prefs.getString(KEY_VOICE_TYPE, defaultVoiceType) ?: defaultVoiceType
+        set(value) {
+            prefs.edit().putString(KEY_VOICE_TYPE, value).apply()
+            notifyChange()
+        }
+
+    var voiceEnabled: Boolean
+        get() = prefs.getBoolean(KEY_VOICE_ENABLED, defaultVoiceEnabled)
+        set(value) {
+            prefs.edit().putBoolean(KEY_VOICE_ENABLED, value).apply()
+            notifyChange()
+        }
+
+    var mascotSizeDp: Int
+        get() = prefs.getInt(KEY_MASCOT_SIZE, 160)
+        set(value) {
+            prefs.edit().putInt(KEY_MASCOT_SIZE, value).apply()
+            notifyChange()
+        }
+
+    var remindersEnabled: Boolean
+        get() = prefs.getBoolean(KEY_REMINDERS_ENABLED, defaultRemindersEnabled)
+        set(value) {
+            prefs.edit().putBoolean(KEY_REMINDERS_ENABLED, value).apply()
+            notifyChange()
+        }
+
+    var reminderIntervalMin: Long
+        get() = prefs.getLong(KEY_REMINDER_INTERVAL, defaultReminderIntervalMin)
+        set(value) {
+            prefs.edit().putLong(KEY_REMINDER_INTERVAL, value).apply()
+            notifyChange()
+        }
+
+    var soundEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SOUND_ENABLED, defaultSoundEnabled)
+        set(value) {
+            prefs.edit().putBoolean(KEY_SOUND_ENABLED, value).apply()
+            notifyChange()
+        }
+
+    var trackingMode: String
+        get() = prefs.getString(KEY_TRACKING_MODE, "touch") ?: "touch"
+        set(value) {
+            prefs.edit().putString(KEY_TRACKING_MODE, value).apply()
+            notifyChange()
+        }
+
+    var invertGyro: Boolean
+        get() = prefs.getBoolean(KEY_INVERT_GYRO, false)
+        set(value) {
+            prefs.edit().putBoolean(KEY_INVERT_GYRO, value).apply()
+            notifyChange()
+        }
+
     var voicePitch = "+10Hz"
     var voiceRate = "+8%"
-    var remindersEnabled = true
-    var reminderIntervalMin = 30L
     val reminders = mutableListOf<ReminderItem>()
     val japaneseReminders = mutableListOf<ReminderItem>()
+
+    private var defaultCharacter = "chibi"
+    private var defaultVoiceType = "japanese"
+    private var defaultVoiceEnabled = false
+    private var defaultRemindersEnabled = false
+    private var defaultReminderIntervalMin = 30L
+    private var defaultSoundEnabled = false
 
     init {
         try {
             val json = JSONObject(context.assets.open("mascot_config.json").bufferedReader().readText())
-            voiceType = json.optString("voice_type", "godavari")
+            defaultCharacter = json.optString("character", "chibi")
+            defaultVoiceType = json.optString("voice_type", "japanese")
             voicePitch = json.optString("voice_pitch", "+10Hz")
             voiceRate = json.optString("voice_rate", "+8%")
-            remindersEnabled = json.optBoolean("reminders_enabled", true)
-            reminderIntervalMin = json.optLong("reminder_interval_min", 30)
+            defaultVoiceEnabled = json.optBoolean("voice_enabled", false)
+            defaultRemindersEnabled = json.optBoolean("reminders_enabled", false)
+            defaultReminderIntervalMin = json.optLong("reminder_interval_min", 30)
+            defaultSoundEnabled = json.optBoolean("sound_enabled", false)
 
             val rl = json.optJSONArray("reminders_list")
             if (rl != null) {
@@ -53,5 +144,10 @@ class MascotConfig(context: Context) {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun notifyChange() {
+        // Direct call to running service instance for instantaneous updates
+        MascotOverlayService.instance?.applyConfigUpdates()
     }
 }

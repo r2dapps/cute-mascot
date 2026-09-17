@@ -1,5 +1,6 @@
 # Gradle cache - stays on D: drive, never commit
 .gradle-cache/
+.gradle/
 
 # Build outputs
 app/build/

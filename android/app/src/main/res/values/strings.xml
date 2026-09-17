@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Cute Mascot</string>
     <string name="channel_name">Mascot Overlay</string>
+    <string name="accessibility_service_desc">Allows Cute Mascot to follow your finger taps across other apps without interfering with touch.</string>
 </resources>

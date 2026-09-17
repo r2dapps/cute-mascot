@@ -5,12 +5,15 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <!-- Foreground service: keep mascot alive without being killed -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!-- Haptic boop feedback -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Read user voice notes from shared storage (optional) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <!-- Notification banner for reminders -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Gyroscope is optional - mascot works fine without it -->
     <uses-feature android:name="android.hardware.sensor.gyroscope" android:required="false" />

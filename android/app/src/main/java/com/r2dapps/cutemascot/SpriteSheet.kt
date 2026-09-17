@@ -14,7 +14,7 @@ import android.graphics.*
  *   directions: 3x3 grid → 9 tiles (up-left, up, up-right, left, center, right, down-left, down, down-right)
  *   reactions:  3x3 grid → 9 tiles (calm, heart, sparkle, surprise, starstruck, blush, sleep, dizzy, grin)
  */
-class SpriteSheet(private val context: Context, private val characterId: String = "char1") {
+class SpriteSheet(private val context: Context, private val characterId: String = "chibi") {
 
     // Direction tile mapping — 3x3 grid row-major
     private val directionKeys = listOf(
@@ -36,24 +36,26 @@ class SpriteSheet(private val context: Context, private val characterId: String 
         loadReactions()
     }
 
-    private fun dirPath() = if (characterId == "char1") "mascot-directions.png"
-                            else "characters/$characterId/directions.png"
-
-    private fun reactPath() = if (characterId == "char1") "mascot-reactions.png"
-                              else "characters/$characterId/reactions.jpg"
-
     private fun loadDirections() {
-        val bmp = try {
-            context.assets.open(dirPath()).use { BitmapFactory.decodeStream(it) }
-        } catch (e: Exception) { null } ?: return
+        val candidates = when (characterId) {
+            "char1", "mascot" -> listOf("mascot-directions.png", "characters/mascot/directions.png")
+            else -> listOf("characters/$characterId/directions.png", "characters/$characterId/directions.jpg")
+        }
+        val bmp = candidates.firstNotNullOfOrNull { path ->
+            try { context.assets.open(path).use { BitmapFactory.decodeStream(it) } } catch (e: Exception) { null }
+        } ?: return
         sliceGrid(bmp, 3, 3, directionKeys, dirTiles)
         bmp.recycle()
     }
 
     private fun loadReactions() {
-        val bmp = try {
-            context.assets.open(reactPath()).use { BitmapFactory.decodeStream(it) }
-        } catch (e: Exception) { null } ?: return
+        val candidates = when (characterId) {
+            "char1", "mascot" -> listOf("mascot-reactions.png", "characters/mascot/reactions.png")
+            else -> listOf("characters/$characterId/reactions.png", "characters/$characterId/reactions.jpg")
+        }
+        val bmp = candidates.firstNotNullOfOrNull { path ->
+            try { context.assets.open(path).use { BitmapFactory.decodeStream(it) } } catch (e: Exception) { null }
+        } ?: return
         sliceGrid(bmp, 3, 3, reactionKeys, reactTiles)
         bmp.recycle()
     }
@@ -70,14 +72,16 @@ class SpriteSheet(private val context: Context, private val characterId: String 
 
     fun loadPhonemeTiles(): Map<String, Bitmap> {
         val phonemes = listOf("A", "I", "U", "E", "O", "M")
-        return phonemes.associateWith { p ->
-            try { context.assets.open("phonemes/$p.png").use { BitmapFactory.decodeStream(it) } }
-            catch (e: Exception) { null }
-        }.filterValues { it != null } as Map<String, Bitmap>
+        val map = HashMap<String, Bitmap>()
+        for (p in phonemes) {
+            val bmp = try { context.assets.open("phonemes/$p.png").use { BitmapFactory.decodeStream(it) } } catch (e: Exception) { null }
+            if (bmp != null) map[p] = bmp
+        }
+        return map
     }
 
     fun getDirectionTile(direction: String): Bitmap? = dirTiles[direction] ?: dirTiles["center"]
-    fun getReactionTile(reaction: String): Bitmap? = reactTiles[reaction] ?: reactTiles["calm"]
+    fun getReactionTile(reaction: String): Bitmap? = reactTiles[reaction] ?: reactTiles["calm"] ?: dirTiles["center"]
 
     fun recycle() {
         dirTiles.values.forEach { it.recycle() }

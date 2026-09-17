@@ -29,10 +29,24 @@ class SpeechController(private val context: Context) {
         tts = TextToSpeech(context) { status ->
             ttsReady = (status == TextToSpeech.SUCCESS)
             if (ttsReady) {
-                tts?.language = Locale("te", "IN")  // Telugu default; Japanese handled per-reminder
+                tts?.language = Locale("te", "IN")  // Telugu default; Japanese handled per-speak call
                 tts?.setSpeechRate(1.1f)
                 tts?.setPitch(1.1f)
             }
+        }
+    }
+
+    // Called by MascotView when voice type changes
+    fun applyVoiceType(voiceType: String) {
+        if (!ttsReady) return
+        if (voiceType == "japanese") {
+            tts?.language = Locale.JAPANESE
+            tts?.setSpeechRate(0.85f)   // Slower = more deliberate anime cadence
+            tts?.setPitch(1.28f)         // Higher = hot anime female pitch
+        } else {
+            tts?.language = Locale("te", "IN")
+            tts?.setSpeechRate(1.1f)
+            tts?.setPitch(1.1f)
         }
     }
 
@@ -41,7 +55,7 @@ class SpeechController(private val context: Context) {
      * [audioName] is the filename in voices_cache or voice_notes.
      * Returns estimated playback duration in ms.
      */
-    fun speak(text: String, audioName: String?, onDone: () -> Unit): Long {
+    fun speak(text: String, audioName: String? = null, onDone: () -> Unit = {}): Long {
         stopCurrent()
 
         // 1. Check voice_notes/ first

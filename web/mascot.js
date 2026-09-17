@@ -468,6 +468,64 @@ class CompanionManager {
         if (el) el.style.animation = checked ? '' : 'none';
       });
     });
+
+    // Style Skin Switcher
+    const setSkin = (skinName) => {
+      let dirUrl, reactUrl, msg;
+      if (skinName === 'guy') {
+        dirUrl = 'assets/characters/guy/directions.png';
+        reactUrl = 'assets/characters/guy/reactions.png';
+        msg = "Switched to Companion Guy!";
+      } else if (skinName === 'pixel') {
+        dirUrl = 'assets/characters/pixel/directions.png';
+        reactUrl = 'assets/characters/pixel/directions.png';
+        msg = "Switched to Pixel Art Priya!";
+      } else if (skinName === 'ink') {
+        dirUrl = 'assets/characters/ink/directions.png';
+        reactUrl = 'assets/characters/ink/directions.png';
+        msg = "Switched to Ink Manga Priya!";
+      } else if (skinName === 'mascot') {
+        dirUrl = '../assets/mascot-directions.png';
+        reactUrl = '../assets/mascot-reactions.png';
+        msg = "Switched to Classic Fox Mascot!";
+      } else {
+        dirUrl = 'assets/characters/chibi/directions.png';
+        reactUrl = 'assets/characters/chibi/reactions.png';
+        msg = "Switched to Chibi Girl style!";
+      }
+
+      if (this.heroDir) this.heroDir.style.backgroundImage = `url('${dirUrl}')`;
+      if (this.heroReact) this.heroReact.style.backgroundImage = `url('${reactUrl}')`;
+      if (this.cornerDir) this.cornerDir.style.backgroundImage = `url('${dirUrl}')`;
+      if (this.cornerReact) this.cornerReact.style.backgroundImage = `url('${reactUrl}')`;
+
+      document.getElementById('skinChibiBtn')?.classList.toggle('active', skinName === 'chibi');
+      document.getElementById('skinMascotBtn')?.classList.toggle('active', skinName === 'mascot');
+      document.getElementById('skinGuyBtn')?.classList.toggle('active', skinName === 'guy');
+      document.getElementById('skinPixelBtn')?.classList.toggle('active', skinName === 'pixel');
+      document.getElementById('skinInkBtn')?.classList.toggle('active', skinName === 'ink');
+      this.showBubble(msg);
+      this.triggerReaction('heart', 900);
+      playRomanticChime(659.25, 0.25);
+    };
+
+    document.getElementById('skinChibiBtn')?.addEventListener('click', () => setSkin('chibi'));
+    document.getElementById('skinMascotBtn')?.addEventListener('click', () => setSkin('mascot'));
+    document.getElementById('skinGuyBtn')?.addEventListener('click', () => setSkin('guy'));
+    document.getElementById('skinPixelBtn')?.addEventListener('click', () => setSkin('pixel'));
+    document.getElementById('skinInkBtn')?.addEventListener('click', () => setSkin('ink'));
+
+    // Android Install Guide Toggle
+    document.getElementById('btnToggleGuide')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const box = document.getElementById('installGuideBox');
+      if (box) {
+        box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
+      }
+    });
+
+    // Default to restored Chibi skin
+    setSkin('chibi');
   }
 }
 

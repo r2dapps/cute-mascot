@@ -1,19 +1,37 @@
-# Reference repository (per user request)
+# ── Sub-projects excluded from this repo ─────────────────────────
 reference-page-mascot/
+spiderman_mascot/
 
-# Python cache & build outputs
+# ── Python / PyInstaller ──────────────────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
 build/
 dist/
+releases/
 *.spec
+*.egg-info/
 
-# System & editor files
+# ── Android build artifacts & Gradle cache ───────────────────────
+android/.gradle-cache/
+android/app/build/
+android/.idea/
+android/*.iml
+android/local.properties
+
+# ── Voice generation tools (large, not tracked) ──────────────────
+voice_notes/generated/
+*.wav.tmp
+
+# ── System & editor ──────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-
-# Separate Spiderman project folder
-spiderman_mascot/
+# ── Experimental character styles (not pushed to git) ───────────────
+characters/pixel/
+characters/ink/
+android/app/src/main/assets/characters/pixel/
+android/app/src/main/assets/characters/ink/
+web/assets/characters/pixel/
+web/assets/characters/ink/
