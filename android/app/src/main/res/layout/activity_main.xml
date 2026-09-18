@@ -561,11 +561,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp">
+
+                    <!-- Female voices -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="♀ Female voices"
+                        android:textColor="@color/accent"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="2dp"/>
                     <RadioButton
                         android:id="@+id/rbVoiceGodavari"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Godavari Telugu (default)"
+                        android:text="🌸 Godavari Telugu (female)"
                         android:textColor="@color/textPrimary"
                         android:buttonTint="@color/colorPrimary"
                         android:minHeight="36dp"/>
@@ -573,7 +584,34 @@
                         android:id="@+id/rbVoiceJapanese"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Japanese anime voice"
+                        android:text="🌸 Japanese anime (female)"
+                        android:textColor="@color/textPrimary"
+                        android:buttonTint="@color/colorPrimary"
+                        android:minHeight="36dp"/>
+
+                    <!-- Male voices -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="♂ Male voices"
+                        android:textColor="@color/accent"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="2dp"/>
+                    <RadioButton
+                        android:id="@+id/rbVoiceGodavariMale"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="🎙️ Andhra Telugu (male)"
+                        android:textColor="@color/textPrimary"
+                        android:buttonTint="@color/colorPrimary"
+                        android:minHeight="36dp"/>
+                    <RadioButton
+                        android:id="@+id/rbVoiceJapaneseMale"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="🎙️ Japanese cool (male)"
                         android:textColor="@color/textPrimary"
                         android:buttonTint="@color/colorPrimary"
                         android:minHeight="36dp"/>

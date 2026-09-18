@@ -39,14 +39,31 @@ class SpeechController(private val context: Context) {
     fun applyVoiceType(voiceType: String) {
         pendingVoiceType = voiceType
         if (!ttsReady) return
-        if (voiceType == "japanese") {
-            tts?.language = Locale.JAPANESE
-            tts?.setSpeechRate(0.85f)
-            tts?.setPitch(1.28f)
-        } else {
-            tts?.language = Locale("te", "IN")
-            tts?.setSpeechRate(1.1f)
-            tts?.setPitch(1.1f)
+        when (voiceType) {
+            "japanese" -> {
+                // Female anime — high pitch, slightly slower
+                tts?.language = Locale.JAPANESE
+                tts?.setSpeechRate(0.85f)
+                tts?.setPitch(1.28f)
+            }
+            "japanese-male" -> {
+                // Male cool — low pitch, normal speed
+                tts?.language = Locale.JAPANESE
+                tts?.setSpeechRate(0.90f)
+                tts?.setPitch(0.72f)
+            }
+            "godavari-male" -> {
+                // Andhra Telugu male — deep pitch, confident pace
+                tts?.language = Locale("te", "IN")
+                tts?.setSpeechRate(1.0f)
+                tts?.setPitch(0.75f)
+            }
+            else -> {
+                // "godavari" — default Godavari Telugu female
+                tts?.language = Locale("te", "IN")
+                tts?.setSpeechRate(1.1f)
+                tts?.setPitch(1.1f)
+            }
         }
     }
 

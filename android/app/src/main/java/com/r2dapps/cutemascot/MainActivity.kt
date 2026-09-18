@@ -189,13 +189,24 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.btnTestSound).setOnClickListener { testSoundManager?.playBoop() }
 
-        // Telugu default — Godavari first in UI
-        val rbVoiceJapanese = findViewById<RadioButton>(R.id.rbVoiceJapanese)
+        // Voice type — 4 options: female Telugu, female Japanese, male Telugu, male Japanese
         val rbVoiceGodavari = findViewById<RadioButton>(R.id.rbVoiceGodavari)
-        if (config.voiceType == "japanese") rbVoiceJapanese.isChecked = true
-        else rbVoiceGodavari.isChecked = true
+        val rbVoiceJapanese = findViewById<RadioButton>(R.id.rbVoiceJapanese)
+        val rbVoiceGodavariMale = findViewById<RadioButton>(R.id.rbVoiceGodavariMale)
+        val rbVoiceJapaneseMale = findViewById<RadioButton>(R.id.rbVoiceJapaneseMale)
+        when (config.voiceType) {
+            "japanese"      -> rbVoiceJapanese.isChecked = true
+            "godavari-male" -> rbVoiceGodavariMale.isChecked = true
+            "japanese-male" -> rbVoiceJapaneseMale.isChecked = true
+            else            -> rbVoiceGodavari.isChecked = true
+        }
         findViewById<RadioGroup>(R.id.rgVoice).setOnCheckedChangeListener { _, checkedId ->
-            config.voiceType = if (checkedId == R.id.rbVoiceJapanese) "japanese" else "godavari"
+            config.voiceType = when (checkedId) {
+                R.id.rbVoiceJapanese      -> "japanese"
+                R.id.rbVoiceGodavariMale  -> "godavari-male"
+                R.id.rbVoiceJapaneseMale  -> "japanese-male"
+                else                      -> "godavari"
+            }
         }
 
         findViewById<SwitchCompat>(R.id.switchVoice).apply {
@@ -580,7 +591,7 @@ class MainActivity : AppCompatActivity() {
         val alarms = AlarmStore.load(this)
         val alarm = alarms.firstOrNull { it.enabled } ?: alarms.firstOrNull()
         val text = alarm?.speakText?.ifBlank { null } ?: alarm?.title
-            ?: if (config.voiceType == "japanese") {
+            ?: if (config.voiceType.startsWith("japanese")) {
                 config.japaneseReminders.randomOrNull()?.text
             } else {
                 config.reminders.randomOrNull()?.text
