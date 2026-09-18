@@ -2,11 +2,11 @@
   <img src="assets/icon.png" width="160" height="160" alt="Cute Desktop Mascot Icon" style="border-radius: 50%; box-shadow: 0 8px 32px rgba(255, 105, 180, 0.3);">
 </p>
 
-# 🎀 Cute Desktop & Mobile Mascot (v1.3.0)
+# 🎀 Cute Desktop & Mobile Mascot (v1.4.0)
 
-An interactive, transparent mascot for Windows Desktop and Android Mobile, featuring customizable characters (cute anime girl with spectacles & kurti, companion guy, fox chibi), talking reminders in Godavari Telugu and Japanese anime voices with phoneme lip-sync, hot-swappable character sheets, and playful idle animations.
+An interactive, transparent desktop and mobile companion featuring **65+ open characters**, a built-in **AI Prompt Studio**, 1-tap custom PNG import, talking reminders with **4 TTS voices** (Andhra Telugu male/female, Japanese male/female), exact alarm reminders, and playful cursor-following physics.
 
-[![Release](https://img.shields.io/badge/release-v1.3.0-pink.svg)](https://github.com/r2dapps/cute-mascot/releases)
+[![Release](https://img.shields.io/badge/release-v1.4.0-pink.svg)](https://github.com/r2dapps/cute-mascot/releases)
 [![Live Web Demo](https://img.shields.io/badge/Live%20Web%20Demo-Interactive%20Showcase-ff69b4.svg)](https://r2dapps.github.io/cute-mascot/web/)
 [![Android](https://img.shields.io/badge/Android-APK%20Ready-green.svg)](https://github.com/r2dapps/cute-mascot/releases/latest/download/CuteMascot.apk)
 [![Windows](https://img.shields.io/badge/Windows-EXE%20Ready-blue.svg)](https://github.com/r2dapps/cute-mascot/releases/latest/download/DesktopMascot.exe)
@@ -14,38 +14,41 @@ An interactive, transparent mascot for Windows Desktop and Android Mobile, featu
 
 ---
 
-## 📦 Downloads & Live Demo (v1.3.0)
+## 📦 Downloads & Live Demo (v1.4.0)
 
 | Platform | Link / Download | Features |
 | :--- | :--- | :--- |
-| 🌐 **Live Web Demo** | [**Open Web Companion**](https://r2dapps.github.io/cute-mascot/web/) | Zero install, interactive browser mascot, mouse tracking, squish boop sounds, live character switching |
-| 📱 **Android Mobile** | [**CuteMascot.apk**](https://github.com/r2dapps/cute-mascot/releases/download/v1.3.0/CuteMascot.apk) *(20.4 MB)* | Floating overlay, real-time size slider, SoundPool boops, full-screen touch tracking, Gyro tilt, health reminders |
-| 💻 **Windows Desktop** | [**DesktopMascot.exe**](https://github.com/r2dapps/cute-mascot/releases/download/v1.3.0/DesktopMascot.exe) *(63.5 MB)* | Standalone Win32 per-pixel transparency, global mouse tracking, Telugu/Japanese voice reminders, lip-sync, tray controls |
+| 🌐 **Live Web Demo** | [**Open Web Companion**](https://r2dapps.github.io/cute-mascot/web/) | Zero install, interactive browser mascot, mouse tracking, squish boop sounds, 5 top skins + 60 more in dropdown |
+| 📱 **Android Mobile** | [**CuteMascot.apk**](https://github.com/r2dapps/cute-mascot/releases/download/v1.4.0/CuteMascot.apk) *(173 MB)* | 65+ built-in characters, 4 TTS voice types, AI Prompt Studio, custom PNG import, exact health reminders, full-screen touch & gyro tilt |
+| 💻 **Windows Desktop** | [**DesktopMascot.exe**](https://github.com/r2dapps/cute-mascot/releases/download/v1.4.0/DesktopMascot.exe) *(60 MB)* | Standalone Win32 per-pixel transparency, 4 TTS voice options, hot-swappable characters, tray controls, startup support |
 
 ---
 
 ## ✨ Features
 
 - **🖥️ True Desktop Floating Window**: Native Win32 `UpdateLayeredWindow` with per-pixel alpha transparency. Frameless, zero background box, always floating on your desktop or over active windows.
-- **📱 Android Floating Overlay**: Floats on top of all phone apps using clean overlay permissions. Full-screen in-app finger tracking and gyroscope motion tilt tracking.
-- **🗣️ Talking Reminders & Voice Notes**:
+- **📱 Android Floating Overlay**: Floats on top of all phone apps using clean overlay permissions. Full-screen touch tracking and gyroscope motion tilt tracking.
+- **🎭 65+ Built-in Open Characters**: Ships out-of-the-box with 65 diverse, lovable characters from the open-source [page-mascot](https://github.com/nilbuild/page-mascot) cast (fox, cat, robot, bunny, dino, wizard, otter, penguin, panda, and dozens more!).
+- **🎨 AI Prompt Studio & Custom Import**:
+  - In-app AI Prompt Studio with copyable prompts optimized for ChatGPT / Midjourney.
+  - One-tap custom mascot import for any 3×3 `directions.png` sprite sheet on Android.
+- **🗣️ Talking Reminders & 4 TTS Voice Options**:
   - Periodically reminds you to drink water, stretch, correct posture, and smile.
-  - Dual voice modes: **Godavari Telugu** (sweet, caring) and **Japanese Anime** (cute, soft).
-  - Synchronized real-time phoneme lip-sync (`A`, `E`, `I`, `O`, `U`, `M`).
+  - **4 Voice Profiles**:
+    - **Andhra Godavari** (Telugu Female)
+    - **Andhra Rayalaseema** (Telugu Male)
+    - **Japanese Anime** (Cute Female)
+    - **Japanese Hero** (Anime Male)
+  - **Context-Aware Lip-Sync & Reactions**: Phoneme lip-sync is reserved for the personal mascot character; all other characters express dialogue with speech reactions and a visible floating dialogue bubble!
 - **👀 Global Cursor & Touch Tracking**: Head smoothly turns and follows your cursor or touch anywhere across your screens.
 - **💖 Interactive Boops & Audio Engine**:
   - Tap or click to boop! Rubbery squish bounce physics with cheerful sound effects.
-  - Multi-layer audio playback with embedded dialogue fallbacks.
+  - Multi-layer audio playback with synthesized chime fallbacks.
 - **🌸 Idle Peeking & Playful Behaviors**:
   - Natural blinks, playful peeks, cute winks, and idle animations.
-- **🎭 Multi-Character Roster**:
-  - **Mascot**: Classic Fox Chibi companion.
-  - **Chibi Girl**: High-detail anime girl with spectacles, wavy dark hair, pearl hairpin, and pink kurti.
-  - **Companion Guy**: Stylized partner with curly hair and glasses, complete with full 9-reaction sprite sheet.
-  - Hot-swappable on both desktop and mobile!
 - **⚙️ Native Controls & Customization**:
   - Desktop: Tray context menu with size presets, sound toggle, teleport, reminder trigger, startup launch.
-  - Android: Modern settings dashboard with real-time size slider (100–260 dp), preset chips, and sound effects test.
+  - Android: Modern settings dashboard with real-time size slider (100–260 dp), character grid, alarms manager, and voice tests.
 
 ---
 
@@ -251,37 +254,32 @@ On GitHub, you can also navigate to **Releases** ➔ **Draft a new release**, se
 
 ```
 Desktop-Mascot/
-├── DesktopMascot.exe          # Standalone Windows executable
 ├── app.py                     # Native Win32 Desktop Mascot application
 ├── index.html                 # Root redirect for GitHub Pages
-├── process_sheets.py          # Sprite sheets chroma-key & alpha pipeline
-├── mascot_source.png          # Original character reference image
 ├── mascot_config.json         # User settings (character, size, sound, startup)
-│
-├── .github/workflows/
-│   └── deploy-pages.yml       # GitHub Actions workflow for GitHub Pages
-│
-├── assets/                    # Bundled default assets
-│   ├── mascot-directions.png  # 3x3 Aligned Head Directions Atlas (PNG)
-│   ├── mascot-directions.webp # 3x3 Aligned Head Directions Atlas (WebP)
-│   ├── mascot-reactions.png   # 3x3 Aligned Facial Expressions Atlas (PNG)
-│   ├── mascot-reactions.webp  # 3x3 Aligned Facial Expressions Atlas (WebP)
-│   ├── icon.png               # Application icon (PNG)
-│   └── icon.ico               # Application tray icon (ICO)
-│
-├── characters/                # Hot-swappable character folders (includes page-mascot cast)
-│   ├── mascot/                # Custom girl / fox mascot sheets
-│   ├── chibi/ · guy/ · …      # App skins
-│   └── fox/ · cat/ · …        # Bundled page-mascot characters (see Credits)
-│
 ├── sync_reference_characters.py  # Refresh characters/ from local page-mascot clone
 │
-├── web/                       # Web Showcase & Playground
-│   ├── index.html             # Interactive showcase
-│   ├── style.css              # Modern aesthetic styling
-│   └── mascot.js              # Mascot engine and sound synthesizer
+├── android/                   # Native Android companion application (Kotlin)
+│   ├── app/src/main/assets/characters/  # 65 open page-mascot characters bundled in APK
+│   └── app/src/main/java/     # Core overlay service, AI prompt studio, speech engine
 │
-└── reference-page-mascot/     # Optional local clone of page-mascot (gitignored)
+├── assets/                    # Bundled default assets
+│   ├── icon.png               # Application icon (PNG)
+│   ├── icon.ico               # Application tray icon (ICO)
+│   └── voices_cache/          # Pre-synthesized dialogue clips
+│
+├── characters/                # Hot-swappable character folders (local desktop)
+│
+├── releases/                  # Release distributions (gitignored)
+│   ├── public/CuteMascot.apk  # Public release (65 open characters)
+│   ├── DesktopMascot.exe      # Public Windows desktop release
+│   └── private/               # Personal private releases (local only)
+│
+└── web/                       # Web Showcase & Playground
+    ├── index.html             # Interactive showcase (5 chips + 60 more dropdown)
+    ├── style.css              # Romantic dark aesthetic styling
+    ├── mascot.js              # Mascot engine and sound synthesizer
+    └── assets/characters/     # 65 open page-mascot character skins
 ```
 
 ---

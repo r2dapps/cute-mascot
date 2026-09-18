@@ -111,7 +111,7 @@ class MascotConfig(private val context: Context) {
     val reminders = mutableListOf<ReminderItem>()
     val japaneseReminders = mutableListOf<ReminderItem>()
 
-    private var defaultCharacter = "chibi"
+    private var defaultCharacter = "fox"
     private var defaultVoiceType = "godavari"
     private var defaultVoiceEnabled = true
     private var defaultRemindersEnabled = true
@@ -122,7 +122,7 @@ class MascotConfig(private val context: Context) {
     init {
         try {
             val json = JSONObject(context.assets.open("mascot_config.json").bufferedReader().readText())
-            defaultCharacter = json.optString("character", "chibi")
+            defaultCharacter = json.optString("character", "fox")
             defaultVoiceType = json.optString("voice_type", "godavari")
             voicePitch = json.optString("voice_pitch", "+10Hz")
             voiceRate = json.optString("voice_rate", "+8%")

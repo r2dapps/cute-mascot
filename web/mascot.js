@@ -469,35 +469,65 @@ class CompanionManager {
       });
     });
 
-    // Style Skin Switcher — 9 open page-mascot characters
-    const SKINS = {
-      'fox':       { label: '🦊 Fox',        dir: 'assets/characters/fox/directions.png',        react: 'assets/characters/fox/reactions.png' },
-      'cat':       { label: '🐱 Cat',        dir: 'assets/characters/cat/directions.png',        react: 'assets/characters/cat/reactions.png' },
-      'robot':     { label: '🤖 Robot',      dir: 'assets/characters/robot/directions.png',      react: 'assets/characters/robot/reactions.png' },
-      'otter':     { label: '🦦 Otter',      dir: 'assets/characters/otter/directions.png',      react: 'assets/characters/otter/reactions.png' },
-      'penguin':   { label: '🐧 Penguin',    dir: 'assets/characters/penguin/directions.png',    react: 'assets/characters/penguin/reactions.png' },
-      'fox-sketch':{ label: '✏️ Fox Sketch', dir: 'assets/characters/fox-sketch/directions.png', react: 'assets/characters/fox-sketch/reactions.png' },
-      'bear':      { label: '🐻 Bear',       dir: 'assets/characters/bear/directions.png',       react: 'assets/characters/bear/reactions.png' },
-      'panda':     { label: '🐼 Panda',      dir: 'assets/characters/panda/directions.png',      react: 'assets/characters/panda/reactions.png' },
-      'koala':     { label: '🐨 Koala',      dir: 'assets/characters/koala/directions.png',      react: 'assets/characters/koala/reactions.png' },
+    // Style Skin Switcher — 65 open page-mascot characters
+    const ALL_OPEN_CHARACTERS = [
+      "afro", "astronaut", "bald", "ballerina", "bear", "beard", "builder", "bunny", 
+      "cap", "cat", "chef", "clockwork", "crt", "cube", "deer", "dino", "droid", 
+      "drone", "fox", "fox-ink", "fox-paper", "fox-pixel", "fox-riso", "fox-sketch", 
+      "frog", "gearbot", "glasses", "grandpa", "granny", "granny-paper", "hamster", 
+      "hedgehog", "hijabi", "hijabi-paper", "kamran", "knight", "knight-paper", "koala", 
+      "lantern", "mouse", "nurse", "otter", "owl", "panda", "panda-paper", "penguin", 
+      "pirate", "postbot", "postbot-paper", "pug", "raccoon", "radio", "redpanda", 
+      "robot", "rocket", "scientist", "scout", "sheep", "sikh", "skater", "sloth", 
+      "tiger", "toaster", "tv", "wizard"
+    ];
+
+    const formatCharLabel = (id) => {
+      return id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     };
 
+    const allSelect = document.getElementById('allSkinsSelect');
+    if (allSelect) {
+      ALL_OPEN_CHARACTERS.forEach(id => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = formatCharLabel(id);
+        allSelect.appendChild(opt);
+      });
+      allSelect.addEventListener('change', (e) => {
+        if (e.target.value) {
+          setSkin(e.target.value);
+        }
+      });
+    }
+
+    const TOP_5_CHIPS = ['fox', 'cat', 'robot', 'bunny', 'dino'];
+
     const setSkin = (skinName) => {
-      const skin = SKINS[skinName] || SKINS['fox'];
-      if (this.heroDir)    this.heroDir.style.backgroundImage    = `url('${skin.dir}')`;
-      if (this.heroReact)  this.heroReact.style.backgroundImage  = `url('${skin.react}')`;
-      if (this.cornerDir)  this.cornerDir.style.backgroundImage  = `url('${skin.dir}')`;
-      if (this.cornerReact)this.cornerReact.style.backgroundImage= `url('${skin.react}')`;
+      const label = formatCharLabel(skinName);
+      const dir = `assets/characters/${skinName}/directions.png`;
+      const react = `assets/characters/${skinName}/reactions.png`;
+      if (this.heroDir)    this.heroDir.style.backgroundImage    = `url('${dir}')`;
+      if (this.heroReact)  this.heroReact.style.backgroundImage  = `url('${react}')`;
+      if (this.cornerDir)  this.cornerDir.style.backgroundImage  = `url('${dir}')`;
+      if (this.cornerReact)this.cornerReact.style.backgroundImage= `url('${react}')`;
       // update active chip
       document.querySelectorAll('.skin-chip').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.skin === skinName);
       });
-      this.showBubble(`Switched to ${skin.label}!`);
+      if (allSelect) {
+        if (TOP_5_CHIPS.includes(skinName)) {
+          allSelect.selectedIndex = 0;
+        } else {
+          allSelect.value = skinName;
+        }
+      }
+      this.showBubble(`Switched to ${label}!`);
       this.triggerReaction('heart', 900);
       playRomanticChime(659.25, 0.25);
     };
 
-    // Wire all skin chips via data-skin attribute (no hardcoded IDs needed)
+    // Wire all skin chips via data-skin attribute
     document.querySelectorAll('.skin-chip[data-skin]').forEach(btn => {
       btn.addEventListener('click', () => setSkin(btn.dataset.skin));
     });

@@ -433,15 +433,16 @@ def set_startup_enabled(enable: bool):
 
 # Character Discovery
 def discover_all_characters():
-    custom_chars = [
-        {
+    custom_chars = []
+    seen_ids = set()
+    if os.path.isfile(DEFAULT_DIRECTIONS_PATH):
+        custom_chars.append({
             "id": "mascot",
             "name": "Mascot (Cute Girl)",
             "dir_path": DEFAULT_DIRECTIONS_PATH,
-            "react_path": DEFAULT_REACTIONS_PATH
-        }
-    ]
-    seen_ids = {"mascot"}
+            "react_path": DEFAULT_REACTIONS_PATH if os.path.isfile(DEFAULT_REACTIONS_PATH) else None
+        })
+        seen_ids.add("mascot")
 
     # 1. Custom characters folder (check PyInstaller bundle dir first, then external exe dir)
     char_dirs = []
@@ -822,9 +823,11 @@ class NativeMascot:
     def init_character(self):
         custom_chars, ref_chars = discover_all_characters()
         all_chars = custom_chars + ref_chars
+        if not all_chars:
+            return
         matched = next((c for c in all_chars if c["id"] == self.current_char_id), None)
         if not matched:
-            matched = custom_chars[0]
+            matched = next((c for c in all_chars if c["id"] in ("fox", "cat")), all_chars[0])
         self.load_character_data(matched)
 
     def load_character_data(self, char_info):
@@ -836,7 +839,10 @@ class NativeMascot:
             dir_img = Image.open(dir_path).convert('RGBA')
         except Exception as e:
             print(f"Error opening directions from {dir_path}: {e}")
-            dir_img = Image.open(DEFAULT_DIRECTIONS_PATH).convert('RGBA')
+            if os.path.isfile(DEFAULT_DIRECTIONS_PATH):
+                dir_img = Image.open(DEFAULT_DIRECTIONS_PATH).convert('RGBA')
+            else:
+                return
         
         dw, dh = dir_img.size
         cw, ch = dw // 3, dh // 3
@@ -887,8 +893,11 @@ class NativeMascot:
             self.update_window_bitmap()
 
     def get_current_image(self):
-        if self.is_speaking and self.current_phoneme in self.phoneme_tiles:
+        if self.is_speaking and self.current_char_id == "mascot" and self.current_phoneme in self.phoneme_tiles:
             base_img = self.phoneme_tiles[self.current_phoneme]
+        elif self.is_speaking:
+            speak_react = getattr(self, "speaking_reaction", None) or "grin"
+            base_img = self.react_tiles.get(speak_react, self.dir_tiles.get(self.direction, self.dir_tiles.get('center')))
         elif self.reaction and self.reaction in self.react_tiles:
             base_img = self.react_tiles[self.reaction]
         else:
@@ -1032,6 +1041,7 @@ class NativeMascot:
         if self.is_speaking:
             if now > self.speaking_until:
                 self.is_speaking = False
+                self.speaking_reaction = None
                 self.current_phoneme = 'M'
                 self.squash_scale_y = 1.0
                 self.squash_scale_x = 1.0
@@ -1281,8 +1291,14 @@ class NativeMascot:
         self.is_speaking = True
         self.speaking_start_time = now
         self.speaking_until = now + duration_sec
-        self.speaking_timeline = build_phoneme_timeline(text, duration_sec)
-        self.current_phoneme = self.speaking_timeline[0][2] if self.speaking_timeline else 'A'
+        talk_reactions = ['grin', 'sparkle', 'calm']
+        self.speaking_reaction = random.choice(talk_reactions)
+        if self.current_char_id == "mascot":
+            self.speaking_timeline = build_phoneme_timeline(text, duration_sec)
+            self.current_phoneme = self.speaking_timeline[0][2] if self.speaking_timeline else 'A'
+        else:
+            self.speaking_timeline = []
+            self.current_phoneme = 'M'
         
         # Show speech bubble
         rect = wintypes.RECT()

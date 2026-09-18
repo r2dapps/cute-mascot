@@ -47,6 +47,7 @@ class MascotView(context: Context) : View(context) {
     private var speakingStartMs = 0L
     private var phonemeTimeline: List<Triple<Float, Float, String>> = emptyList()
     private var currentPhoneme = "M"
+    private var speakingReaction: String? = null
 
     // Talking kinetic bounce (subtle)
     private var talkBounce = 0f
@@ -194,6 +195,7 @@ class MascotView(context: Context) : View(context) {
             if (now > speakingUntilMs) {
                 isSpeaking = false
                 currentPhoneme = "M"
+                speakingReaction = null
                 if (!isAlarmActive) {
                     bubbleText = ""
                 }
@@ -226,11 +228,6 @@ class MascotView(context: Context) : View(context) {
         touchScreenX = rawX
         touchScreenY = rawY
         lastTouchMs = System.currentTimeMillis()
-        val loc = IntArray(2)
-        getLocationOnScreen(loc)
-        val cx = loc[0] + width / 2f
-        val cy = loc[1] + height / 2f
-        updateDirectionFromAngle(rawX - cx, rawY - cy)
         postInvalidate()
     }
 
@@ -252,24 +249,29 @@ class MascotView(context: Context) : View(context) {
         super.onDraw(canvas)
         val w = width.toFloat()
         val h = height.toFloat()
-        val density = resources.displayMetrics.density
-        val bubbleAreaH = 65f * density
-        val mascotAreaH = h - bubbleAreaH
+        val bubbleAreaH = h * 0.32f
+        val mascotAreaH = h * 0.68f
 
-        val mascotSize = minOf(mascotAreaH, w)
+        // Mascot rect centered in bottom 68%
+        val mascotSize = minOf(w, mascotAreaH)
         val mascotLeft = (w - mascotSize) / 2f
-        val mascotTop = bubbleAreaH + (mascotAreaH - mascotSize)
+        val mascotTop = bubbleAreaH + (mascotAreaH - mascotSize) / 2f
         val mascotRect = RectF(mascotLeft, mascotTop, mascotLeft + mascotSize, mascotTop + mascotSize)
 
-        // Apply talk bounce (subtle y scale)
+        // Kinetic talk bounce
         if (talkBounce != 0f) {
             canvas.save()
             canvas.scale(1f - talkBounce, 1f + talkBounce, mascotRect.centerX(), mascotRect.centerY())
         }
 
-        // Determine which tile to draw
+        // Determine which tile to draw: phonemes ONLY for mascot character
         val tile: Bitmap? = when {
-            isSpeaking && phonemeTiles.containsKey(currentPhoneme) -> phonemeTiles[currentPhoneme]
+            isSpeaking && config.character == "mascot" && phonemeTiles.containsKey(currentPhoneme) -> {
+                phonemeTiles[currentPhoneme]
+            }
+            isSpeaking -> {
+                spriteSheet.getReactionTile(speakingReaction ?: "grin")
+            }
             reaction != null -> spriteSheet.getReactionTile(reaction!!)
             else -> spriteSheet.getDirectionTile(direction)
         }
@@ -418,7 +420,9 @@ class MascotView(context: Context) : View(context) {
         isSpeaking = config.voiceEnabled
         speakingStartMs = System.currentTimeMillis()
         speakingUntilMs = speakingStartMs + durationMs
-        if (config.voiceEnabled) {
+        val talkReactions = listOf("grin", "sparkle", "calm")
+        speakingReaction = talkReactions.random()
+        if (config.voiceEnabled && config.character == "mascot") {
             phonemeTimeline = PhonemeTimeline.build(text, durationMs / 1000f)
             currentPhoneme = phonemeTimeline.firstOrNull()?.third ?: "A"
         }
@@ -431,6 +435,7 @@ class MascotView(context: Context) : View(context) {
         bubbleText = ""
         bubbleEndMs = 0L
         isSpeaking = false
+        speakingReaction = null
         speechController.stopCurrent()
         postInvalidate()
     }
@@ -457,7 +462,9 @@ class MascotView(context: Context) : View(context) {
         isSpeaking = config.voiceEnabled
         speakingStartMs = System.currentTimeMillis()
         speakingUntilMs = speakingStartMs + durationMs
-        if (config.voiceEnabled) {
+        val talkReactions = listOf("grin", "sparkle", "calm")
+        speakingReaction = talkReactions.random()
+        if (config.voiceEnabled && config.character == "mascot") {
             phonemeTimeline = PhonemeTimeline.build(text, durationMs / 1000f)
             currentPhoneme = phonemeTimeline.firstOrNull()?.third ?: "A"
         }

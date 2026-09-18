@@ -68,18 +68,17 @@
         <span>Click to boop &bull; Rapid click four times for dizzy reaction &bull; Notice corner companion watching too</span>
       </div>
 
-      <!-- Live Style Skin Switcher (open page-mascot characters) -->
+      <!-- Live Style Skin Switcher (5 favorites + 60 more) -->
       <div class="skin-switcher-bar">
-        <span class="skin-label">Try a skin:</span>
-        <button type="button" class="skin-chip active" id="skinFoxBtn"        data-skin="fox">🦊 Fox</button>
-        <button type="button" class="skin-chip"        id="skinCatBtn"        data-skin="cat">🐱 Cat</button>
-        <button type="button" class="skin-chip"        id="skinRobotBtn"      data-skin="robot">🤖 Robot</button>
-        <button type="button" class="skin-chip"        id="skinOtterBtn"      data-skin="otter">🦦 Otter</button>
-        <button type="button" class="skin-chip"        id="skinPenguinBtn"    data-skin="penguin">🐧 Penguin</button>
-        <button type="button" class="skin-chip"        id="skinFoxSketchBtn"  data-skin="fox-sketch">✏️ Fox Sketch</button>
-        <button type="button" class="skin-chip"        id="skinBearBtn"       data-skin="bear">🐻 Bear</button>
-        <button type="button" class="skin-chip"        id="skinPandaBtn"      data-skin="panda">🐼 Panda</button>
-        <button type="button" class="skin-chip"        id="skinKoalaBtn"      data-skin="koala">🐨 Koala</button>
+        <span class="skin-label">Try skin:</span>
+        <button type="button" class="skin-chip active" data-skin="fox">🦊 Fox</button>
+        <button type="button" class="skin-chip" data-skin="cat">🐱 Cat</button>
+        <button type="button" class="skin-chip" data-skin="robot">🤖 Robot</button>
+        <button type="button" class="skin-chip" data-skin="bunny">🐰 Bunny</button>
+        <button type="button" class="skin-chip" data-skin="dino">🦖 Dino</button>
+        <select id="allSkinsSelect" class="skin-select" title="Switch to any of 65+ characters">
+          <option value="" disabled selected>+60 More ▾</option>
+        </select>
       </div>
     </section>
 
@@ -121,32 +120,12 @@
 
     <!-- Info & Download Grid -->
     <section class="info-grid">
-      <!-- Windows Standalone App Card -->
-      <div class="glass-card download-card">
-        <div class="card-badge">Windows Desktop (v1.4.0)</div>
-        <h2>Desktop Floating Widget</h2>
-        <p>
-          Run your mascot right on your Windows desktop above any program, taskbar, or game.
-          Zero installation needed — pure Win32 per-pixel transparency, hot-swappable character skins, 
-          4-voice TTS (Telugu &amp; Japanese, male &amp; female), lip-sync, and startup support.
-        </p>
-        <div class="cta-row">
-          <a href="https://github.com/r2dapps/cute-mascot/releases/download/v1.4.0/DesktopMascot.exe" download class="download-btn">
-            <span>Download DesktopMascot.exe</span>
-            <small>v1.4.0 Standalone &bull; Windows 10/11 (64-bit)</small>
-          </a>
-          <a href="https://github.com/r2dapps/cute-mascot" target="_blank" class="secondary-btn">
-            <span>Source Code on GitHub</span>
-          </a>
-        </div>
-      </div>
-
       <!-- Android Mobile App Card -->
       <div class="glass-card download-card">
         <div class="card-badge" style="background: rgba(52, 211, 153, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.3);">Android Mobile (v1.4.0)</div>
         <h2>Mobile Floating Mascot</h2>
         <p>
-          Float your mascot over any phone app! Includes 9 starter characters, 4 TTS voice types (Telugu &amp; Japanese male/female), 
+          Float your mascot over any phone app! Includes 65+ built-in characters, 4 TTS voice types (Telugu &amp; Japanese male/female), 
           alarm reminders, custom PNG import, and a built-in AI Prompt Studio to create your own character!
         </p>
         <div class="cta-row">
@@ -283,11 +262,9 @@ Consistent character design matching the same character, clean outlines, no bord
 
     <!-- Footer -->
     <footer class="romantic-footer">
-      <p>
-        Built with love, inspired by <a href="https://github.com/nicholasgasior/page-mascot" target="_blank">page-mascot</a> by nicholasgasior. Thank you for the foundation! 🙏
-      </p>
-      <p>Characters artwork from the open-source <a href="https://github.com/nicholasgasior/page-mascot" target="_blank">page-mascot</a> project.</p>
-      <p class="copyright">MIT License &bull; Cute Desktop Mascot v1.4.0 &bull; <a href="https://github.com/r2dapps/cute-mascot" target="_blank">GitHub</a></p>
+      <p>Built with love &bull; Interactive Cute Mascot Companion</p>
+      <p>Character artwork inspired by open-source page-mascot artwork.</p>
+      <p class="copyright">Cute Mascot v1.4.0 &bull; MIT License</p>
     </footer>
   </main>
 

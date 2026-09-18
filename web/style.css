@@ -694,7 +694,8 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 14px;
 }
 
@@ -726,6 +727,29 @@ input:checked + .slider:before {
   border-color: #ff7ea6;
   color: #ffffff;
   box-shadow: 0 4px 14px var(--rose-glow);
+}
+
+.skin-select {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 182, 193, 0.25);
+  color: var(--text-main);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.skin-select:hover, .skin-select:focus {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: var(--rose-primary);
+}
+
+.skin-select option {
+  background: #1e1222;
+  color: #ffffff;
 }
 
 /* AI Character Studio Styles */

@@ -35,12 +35,8 @@ app-debug.apk
 DesktopMascot.exe
 releases/
 
-# ── Private Personal Characters (Kept local, never on git) ───────────
-characters/chibi/
-characters/guy/
-characters/mascot/
-characters/pixel/
-characters/ink/
+# ── Local Desktop Characters (Kept local, never on git) ──────────────
+/characters/
 
 android/app/src/main/assets/characters/chibi/
 android/app/src/main/assets/characters/guy/
@@ -63,8 +59,23 @@ voice_notes/generated/
 *.wav.tmp
 
 # ── Private default mascot sprite sheets (personal character) ────────
-assets/mascot-directions.png
-assets/mascot-reactions.png
-assets/mascot-directions.webp
-assets/mascot-reactions.webp
+assets/mascot-directions.*
+assets/mascot-reactions.*
+public/mascots/mascot-directions.*
+public/mascots/mascot-reactions.*
+android/app/src/main/assets/mascot-directions.*
+android/app/src/main/assets/mascot-reactions.*
+mascot_source.png
+
+# ── Private phonemes (lip-sync sheets for personal character) ────────
+assets/phonemes/
+assets/talking_phonemes.png
+android/app/src/main/assets/phonemes/
+releases/assets/phonemes/
+releases/assets/talking_phonemes.png
+releases/public/assets/talking_phonemes.png
+releases/private/assets/talking_phonemes.png
+releases/private/assets/phonemes/
+
+
 
