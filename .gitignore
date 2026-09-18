@@ -43,6 +43,7 @@ android/app/src/main/assets/characters/guy/
 android/app/src/main/assets/characters/mascot/
 android/app/src/main/assets/characters/pixel/
 android/app/src/main/assets/characters/ink/
+android/app/src/main/.private_res/
 
 web/assets/characters/chibi/
 web/assets/characters/guy/

@@ -588,21 +588,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun playTestReminder() {
         if (testSpeechController == null) testSpeechController = SpeechController(this)
-        val alarms = AlarmStore.load(this)
-        val alarm = alarms.firstOrNull { it.enabled } ?: alarms.firstOrNull()
-        val text = alarm?.speakText?.ifBlank { null } ?: alarm?.title
-            ?: if (config.voiceType.startsWith("japanese")) {
-                config.japaneseReminders.randomOrNull()?.text
-            } else {
-                config.reminders.randomOrNull()?.text
-            } ?: "Test reminder"
-        val audio = when {
-            alarm?.ringtone?.startsWith("voice:") == true -> alarm.ringtone.removePrefix("voice:")
-            alarm?.ringtone?.startsWith("asset:") == true -> alarm.ringtone.removePrefix("asset:")
-            else -> null
-        }
         testSpeechController?.applyVoiceType(config.voiceType)
-        testSpeechController?.speak(text, audio)
+        testSpeechController?.speak("Hey this is Cute Mascot", null)
     }
 
     private fun updateUI() {

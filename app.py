@@ -725,12 +725,14 @@ class NativeMascot:
         self.teleport_until = 0
         self.teleport_target_pos = None
         
-        # Dragging
+        # Dragging & Particle Trails (Glitter and Hearts)
         self.is_dragging = False
         self.drag_start_x = 0
         self.drag_start_y = 0
         self.win_start_x = 0
         self.win_start_y = 0
+        self.particles = []
+        self.last_particle_spawn = 0
         
         # Talking & Visemes Lip-Sync (A, I, U, E, O, M)
         self.is_speaking = False
@@ -783,19 +785,17 @@ class NativeMascot:
 
         if not self.reminders_list:
             self.reminders_list = [
-                {"id": "water", "text": "రేయ్ లబ్బే, ఏరా ఏం సేత్తన్నావ్, పోయి వాటర్ తాగు రా!", "audio": "water_godavari.mp3"},
-                {"id": "break", "text": "ఏరా ఇంకా కంప్యూటర్ ముందే కూర్చున్నావా, లేసి కాసేపు నడువు రా!", "audio": "break_godavari.mp3"},
-                {"id": "posture", "text": "ఒరేయ్, నడుము నిటారుగా పెట్టుకో, వంగి కూర్చోవద్దు!", "audio": "posture_godavari.mp3"},
-                {"id": "cheer", "text": "ఏంటి డల్ అయిపోయావ్, పని బ్రేక్ ఇచ్చి చాయ్ తాగు పో!", "audio": "cheer_godavari.mp3"}
+                {"id": "water", "text": "Drink water reminder! Stay hydrated!", "audio": None},
+                {"id": "break", "text": "Time to take a stretch break!", "audio": None},
+                {"id": "posture", "text": "Check your posture! Sit straight!", "audio": None},
+                {"id": "cheer", "text": "You are doing great today! Keep it up!", "audio": None}
             ]
         if not self.japanese_reminders_list:
             self.japanese_reminders_list = [
-                {"id": "water_jp", "text": "Ehh?! Rey labbe, era em sethannav... poi water thaagu ra! Ganbatte ne!", "audio": "water_japanese.mp3"},
-                {"id": "break_jp", "text": "Ara ara~ you have been working so long! Take a cute break, baka!", "audio": "break_japanese.mp3"},
-                {"id": "posture_jp", "text": "Oi oi! Sit straight! Posture check desu yo!", "audio": "posture_japanese.mp3"},
-                {"id": "cheer_jp", "text": "Sugoi! You are doing amazing today! Ganbatte!", "audio": "cheer_japanese.mp3"},
-                {"id": "nani_jp", "text": "Nani?! Inka computer mundhe unnav? Chotto walk chesi chaye thaagu ra!", "audio": "nani_japanese.mp3"},
-                {"id": "yamete_jp", "text": "Yamete kudasai! Don't slouch your back like that! Sit straight, baka!", "audio": "yamete_japanese.mp3"}
+                {"id": "water_jp", "text": "Drink water reminder! Ganbatte!", "audio": None},
+                {"id": "break_jp", "text": "Time to take a cute break!", "audio": None},
+                {"id": "posture_jp", "text": "Posture check desu yo! Sit straight!", "audio": None},
+                {"id": "cheer_jp", "text": "You are doing amazing! Ganbatte!", "audio": None}
             ]
 
     def save_config(self):
@@ -914,7 +914,82 @@ class NativeMascot:
         offset_x = (self.size - target_w) // 2
         offset_y = self.size - target_h
         canvas.paste(resized, (offset_x, offset_y), resized)
+
+        # Draw drag trail particles (glitter & hearts)
+        if hasattr(self, "particles") and self.particles:
+            overlay = Image.new('RGBA', (self.size, self.size), (0, 0, 0, 0))
+            draw = ImageDraw.Draw(overlay)
+            active = []
+            for p in self.particles:
+                p["x"] += p["vx"]
+                p["y"] += p["vy"]
+                p["alpha"] -= 0.05
+                if p["alpha"] > 0:
+                    active.append(p)
+                    a = int(max(0, min(255, p["alpha"] * 255)))
+                    r, g, b = p["color"]
+                    col = (r, g, b, a)
+                    s = p["size"]
+                    cx, cy = p["x"], p["y"]
+                    if p["is_heart"]:
+                        # Heart polygon
+                        heart_pts = [
+                            (cx, cy + s * 0.7),
+                            (cx - s * 0.85, cy + s * 0.1),
+                            (cx - s * 0.75, cy - s * 0.6),
+                            (cx - s * 0.25, cy - s * 0.75),
+                            (cx, cy - s * 0.35),
+                            (cx + s * 0.25, cy - s * 0.75),
+                            (cx + s * 0.75, cy - s * 0.6),
+                            (cx + s * 0.85, cy + s * 0.1),
+                        ]
+                        draw.polygon(heart_pts, fill=col)
+                    else:
+                        # 4-point sparkle / star
+                        sparkle_pts = [
+                            (cx, cy - s),
+                            (cx + s * 0.28, cy - s * 0.28),
+                            (cx + s, cy),
+                            (cx + s * 0.28, cy + s * 0.28),
+                            (cx, cy + s),
+                            (cx - s * 0.28, cy + s * 0.28),
+                            (cx - s, cy),
+                            (cx - s * 0.28, cy - s * 0.28),
+                        ]
+                        draw.polygon(sparkle_pts, fill=col)
+            self.particles = active
+            canvas = Image.alpha_composite(canvas, overlay)
+
         return canvas
+
+    def spawn_trail_particle(self):
+        now = time.time()
+        if now - self.last_particle_spawn < 0.04 or len(self.particles) >= 8:
+            return
+        self.last_particle_spawn = now
+
+        is_heart = (len(self.particles) % 2 == 0)
+        cx = self.size / 2.0 + (random.random() - 0.5) * (self.size * 0.45)
+        cy = self.size * 0.65 + (random.random() - 0.5) * (self.size * 0.35)
+        vx = (random.random() - 0.5) * 1.6
+        vy = - (1.2 + random.random() * 2.2)
+        size = 7.0 + random.random() * 7.0
+        if is_heart:
+            color = random.choice([
+                (255, 105, 180),
+                (255, 122, 140),
+                (255, 182, 193)
+            ])
+        else:
+            color = random.choice([
+                (255, 215, 0),
+                (255, 234, 167),
+                (0, 210, 211)
+            ])
+        self.particles.append({
+            "x": cx, "y": cy, "vx": vx, "vy": vy,
+            "alpha": 1.0, "is_heart": is_heart, "size": size, "color": color
+        })
 
     def update_window_bitmap(self):
         if not self.hwnd or self.menu_active:
@@ -1069,6 +1144,10 @@ class NativeMascot:
         # Check reaction expiry
         if self.reaction and now > self.reaction_until:
             self.reaction = None
+            need_update = True
+
+        # Active drag trail particles need frame animation
+        if hasattr(self, "particles") and self.particles:
             need_update = True
 
         # --- Teleport Animation States ---
@@ -1362,7 +1441,7 @@ class NativeMascot:
 
             # 3. Talking Reminders & Voice Profile Submenu
             h_voice_menu = user32.CreatePopupMenu()
-            user32.AppendMenuW(h_voice_menu, MF_STRING, 301, "🗣️ Say Reminder / Dialogue Now")
+            user32.AppendMenuW(h_voice_menu, MF_STRING, 301, "🗣️ Test Voice (\"Hey this is Cute Mascot\")")
             user32.AppendMenuW(h_voice_menu, MF_SEPARATOR, 0, None)
             
             godavari_flag = MF_CHECKED if self.voice_type == "godavari" else MF_UNCHECKED
@@ -1461,15 +1540,15 @@ class NativeMascot:
             self.teleport_enabled = not self.teleport_enabled
             self.save_config()
         elif cmd == 301:
-            self.trigger_random_reminder()
+            self.speak_dialogue("Hey this is Cute Mascot", None)
         elif cmd == 302:
             self.voice_type = "godavari"
             self.save_config()
-            self.speak_dialogue("రేయ్ లబ్బే, ఏరా ఏం సేత్తన్నావ్, పోయి వాటర్ తాగు రా!", "water_godavari.mp3")
+            self.speak_dialogue("Hey this is Cute Mascot", None)
         elif cmd == 303:
             self.voice_type = "japanese"
             self.save_config()
-            self.speak_dialogue("Ehh?! Rey labbe, era em sethannav... poi water thaagu ra! Ganbatte ne!", "water_japanese.mp3")
+            self.speak_dialogue("Hey this is Cute Mascot", None)
         elif cmd == 304:
             self.reminders_enabled = not self.reminders_enabled
             self.save_config()
@@ -1526,14 +1605,31 @@ def wnd_proc(hwnd, msg, wparam, lparam):
             dy = pt.y - mascot_app.drag_start_y
             if math.hypot(dx, dy) > 8:
                 mascot_app.is_dragging = True
+                
+                # Center-point screen edge clamp: constrain character's center point, not window boundaries
+                screen_w = user32.GetSystemMetrics(0)
+                screen_h = user32.GetSystemMetrics(1)
+                half_size = mascot_app.size / 2.0
+                target_center_x = (mascot_app.win_start_x + dx) + half_size
+                target_center_y = (mascot_app.win_start_y + dy) + half_size
+
+                edge_offset = 20  # Minimum distance of character's center from screen edge
+                clamped_center_x = max(edge_offset, min(screen_w - edge_offset, target_center_x))
+                clamped_center_y = max(edge_offset, min(screen_h - edge_offset, target_center_y))
+
+                new_x = int(round(clamped_center_x - half_size))
+                new_y = int(round(clamped_center_y - half_size))
+
                 hwnd_top = HWND_TOPMOST if mascot_app.always_on_top else HWND_NOTOPMOST
                 user32.SetWindowPos(
                     hwnd, hwnd_top,
-                    mascot_app.win_start_x + dx,
-                    mascot_app.win_start_y + dy,
+                    new_x,
+                    new_y,
                     0, 0,
                     SWP_NOSIZE | SWP_NOACTIVATE
                 )
+                mascot_app.spawn_trail_particle()
+                mascot_app.update_window_bitmap()
         return 0
     elif msg == WM_LBUTTONUP:
         if mascot_app:

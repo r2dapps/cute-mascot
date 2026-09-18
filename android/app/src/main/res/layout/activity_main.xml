@@ -691,7 +691,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cute Desktop Mascot · v1.4.0"
+                android:text="Cute Mascot Android · v1.4.0"
                 android:textColor="@color/textMuted"
                 android:textSize="11sp"
                 android:layout_marginTop="10dp"/>

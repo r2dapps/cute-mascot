@@ -77,6 +77,25 @@ class MascotView(context: Context) : View(context) {
     private var dragWinStartY = 0
     private var isDragging = false
 
+    // Drag particle trail (glitter and hearts - battery safe & lightweight)
+    private data class TrailParticle(
+        var x: Float,
+        var y: Float,
+        var vx: Float,
+        var vy: Float,
+        var alpha: Float,
+        val isHeart: Boolean,
+        val size: Float,
+        val color: Int
+    )
+    private val particles = mutableListOf<TrailParticle>()
+    private var lastParticleSpawnMs = 0L
+    private val particlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+    private val tempHeartPath = Path()
+    private val tempSparklePath = Path()
+
     // Touch position (for eye tracking)
     private var touchScreenX = -1f
     private var touchScreenY = -1f
@@ -281,10 +300,86 @@ class MascotView(context: Context) : View(context) {
 
         if (talkBounce != 0f) canvas.restore()
 
+        // Draw drag particles (glitter and hearts - battery-safe)
+        if (particles.isNotEmpty()) {
+            val it = particles.iterator()
+            while (it.hasNext()) {
+                val p = it.next()
+                p.x += p.vx
+                p.y += p.vy
+                p.alpha -= 0.05f
+                if (p.alpha <= 0f) {
+                    it.remove()
+                } else {
+                    val a = (p.alpha * 255).toInt().coerceIn(0, 255)
+                    particlePaint.color = Color.argb(
+                        a,
+                        Color.red(p.color),
+                        Color.green(p.color),
+                        Color.blue(p.color)
+                    )
+                    if (p.isHeart) {
+                        drawHeart(canvas, p.x, p.y, p.size, particlePaint)
+                    } else {
+                        drawSparkle(canvas, p.x, p.y, p.size, particlePaint)
+                    }
+                }
+            }
+        }
+
         // Draw speech bubble above mascot
         if (bubbleText.isNotEmpty() && System.currentTimeMillis() < bubbleEndMs) {
             drawSpeechBubble(canvas, bubbleText, w, bubbleAreaH, mascotRect.centerX())
         }
+    }
+
+    private fun drawHeart(canvas: Canvas, cx: Float, cy: Float, size: Float, paint: Paint) {
+        tempHeartPath.reset()
+        val s = size * 0.5f
+        tempHeartPath.moveTo(cx, cy + s * 0.7f)
+        tempHeartPath.cubicTo(cx - s * 1.2f, cy - s * 0.3f, cx - s * 0.7f, cy - s * 1.2f, cx, cy - s * 0.4f)
+        tempHeartPath.cubicTo(cx + s * 0.7f, cy - s * 1.2f, cx + s * 1.2f, cy - s * 0.3f, cx, cy + s * 0.7f)
+        canvas.drawPath(tempHeartPath, paint)
+    }
+
+    private fun drawSparkle(canvas: Canvas, cx: Float, cy: Float, size: Float, paint: Paint) {
+        tempSparklePath.reset()
+        val s = size * 0.6f
+        tempSparklePath.moveTo(cx, cy - s)
+        tempSparklePath.quadTo(cx, cy, cx + s, cy)
+        tempSparklePath.quadTo(cx, cy, cx, cy + s)
+        tempSparklePath.quadTo(cx, cy, cx - s, cy)
+        tempSparklePath.quadTo(cx, cy, cx, cy - s)
+        canvas.drawPath(tempSparklePath, paint)
+    }
+
+    private fun spawnTrailParticle(mascotCenterX: Float, mascotCenterY: Float) {
+        val now = System.currentTimeMillis()
+        if (now - lastParticleSpawnMs < 50L || particles.size >= 8) return
+        lastParticleSpawnMs = now
+
+        val density = resources.displayMetrics.density
+        val isHeart = (particles.size % 2 == 0)
+        val spread = 24f * density
+        val px = mascotCenterX + (kotlin.random.Random.nextFloat() - 0.5f) * spread
+        val py = mascotCenterY + (kotlin.random.Random.nextFloat() - 0.5f) * spread
+        val vx = (kotlin.random.Random.nextFloat() - 0.5f) * 1.5f * density
+        val vy = - (1.2f + kotlin.random.Random.nextFloat() * 1.8f) * density
+        val size = (8f + kotlin.random.Random.nextFloat() * 6f) * density
+        val color = if (isHeart) {
+            listOf(
+                Color.argb(255, 255, 105, 180),
+                Color.argb(255, 255, 122, 140),
+                Color.argb(255, 255, 182, 193)
+            ).random()
+        } else {
+            listOf(
+                Color.argb(255, 255, 215, 0),
+                Color.argb(255, 255, 234, 167),
+                Color.argb(255, 129, 236, 236)
+            ).random()
+        }
+        particles.add(TrailParticle(px, py, vx, vy, 1.0f, isHeart, size, color))
     }
 
     private fun drawSpeechBubble(canvas: Canvas, text: String, totalW: Float, maxBubbleH: Float, mascotCenterX: Float) {
@@ -362,11 +457,39 @@ class MascotView(context: Context) : View(context) {
                 if (isDragging || hypot(dx, dy) > 12f) {
                     isDragging = true
                     updateDirectionFromAngle(dx, dy)
+
+                    // Center-point screen edge clamp: constrain character's center point, not window boundaries
+                    val dm = resources.displayMetrics
+                    val screenW = dm.widthPixels.toFloat()
+                    val screenH = dm.heightPixels.toFloat()
+                    val winW = (wmParams?.width ?: width).toFloat()
+                    val winH = (wmParams?.height ?: height).toFloat()
+                    val mascotCenterInWinX = winW / 2f
+                    val mascotAreaH = winH * 0.68f
+                    val bubbleAreaH = winH * 0.32f
+                    val mascotCenterInWinY = bubbleAreaH + mascotAreaH / 2f
+
+                    val targetX = dragWinStartX - dx
+                    val targetY = dragWinStartY - dy
+
+                    val targetCenterOnScreenX = screenW - targetX - winW + mascotCenterInWinX
+                    val targetCenterOnScreenY = screenH - targetY - winH + mascotCenterInWinY
+
+                    val edgeOffset = 24f * density
+                    val clampedCenterX = targetCenterOnScreenX.coerceIn(edgeOffset, screenW - edgeOffset)
+                    val clampedCenterY = targetCenterOnScreenY.coerceIn(edgeOffset, screenH - edgeOffset)
+
+                    val newX = (screenW - winW + mascotCenterInWinX - clampedCenterX).toInt()
+                    val newY = (screenH - winH + mascotCenterInWinY - clampedCenterY).toInt()
+
                     wmParams?.apply {
-                        x = (dragWinStartX - dx).toInt()
-                        y = (dragWinStartY - dy).toInt()
+                        x = newX
+                        y = newY
                     }
                     wm?.updateViewLayout(this, wmParams)
+
+                    // Spawn magical glitter and heart particle trails
+                    spawnTrailParticle(width / 2f, mascotCenterInWinY)
                 }
             }
             MotionEvent.ACTION_UP -> {

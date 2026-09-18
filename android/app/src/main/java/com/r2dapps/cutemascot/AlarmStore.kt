@@ -158,16 +158,16 @@ object AlarmStore {
             hour = 10,
             minute = 0,
             daysMask = AlarmItem.EVERY_DAY,
-            ringtone = "asset:water_godavari.mp3",
-            speakText = "పోయి వాటర్ తాగు రా!"
+            ringtone = "system",
+            speakText = "Drink water reminder! Stay hydrated!"
         ),
         AlarmItem(
             title = "Stretch break",
             hour = 15,
             minute = 30,
             daysMask = AlarmItem.WEEKDAYS,
-            ringtone = "asset:break_godavari.mp3",
-            speakText = "లేసి కాసేపు నడువు రా!"
+            ringtone = "system",
+            speakText = "Time to take a stretch break!"
         )
     )
 }
