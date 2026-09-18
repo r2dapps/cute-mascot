@@ -52,7 +52,7 @@ class SpriteSheet(private val context: Context, private val characterId: String 
         }
 
         val candidates = when (characterId) {
-            "char1", "mascot" -> listOf("mascot-directions.png", "characters/mascot/directions.png")
+            "char1", "mascot" -> listOf("characters/mascot/directions.png")
             else -> listOf("characters/$characterId/directions.png", "characters/$characterId/directions.jpg")
         }
         var bmp = candidates.firstNotNullOfOrNull { path ->
@@ -60,9 +60,8 @@ class SpriteSheet(private val context: Context, private val characterId: String 
         }
         if (bmp == null) {
             val fallbackPaths = listOf(
-                "characters/fox/directions.png",
                 "characters/cat/directions.png",
-                "mascot-directions.png"
+                "characters/fox/directions.png"
             )
             bmp = fallbackPaths.firstNotNullOfOrNull { path ->
                 try { context.assets.open(path).use { BitmapFactory.decodeStream(it) } } catch (e: Exception) { null }
@@ -89,7 +88,7 @@ class SpriteSheet(private val context: Context, private val characterId: String 
         }
 
         val candidates = when (characterId) {
-            "char1", "mascot" -> listOf("mascot-reactions.png", "characters/mascot/reactions.png")
+            "char1", "mascot" -> listOf("characters/mascot/reactions.png")
             else -> listOf("characters/$characterId/reactions.png", "characters/$characterId/reactions.jpg")
         }
         var bmp = candidates.firstNotNullOfOrNull { path ->
@@ -97,9 +96,8 @@ class SpriteSheet(private val context: Context, private val characterId: String 
         }
         if (bmp == null) {
             val fallbackPaths = listOf(
-                "characters/fox/reactions.png",
                 "characters/cat/reactions.png",
-                "mascot-reactions.png"
+                "characters/fox/reactions.png"
             )
             bmp = fallbackPaths.firstNotNullOfOrNull { path ->
                 try { context.assets.open(path).use { BitmapFactory.decodeStream(it) } } catch (e: Exception) { null }

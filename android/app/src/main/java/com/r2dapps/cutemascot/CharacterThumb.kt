@@ -41,13 +41,6 @@ object CharacterThumb {
             }
         } catch (_: Exception) {}
 
-        // Fallback for legacy mascot if in root assets and not already listed
-        if (list.none { it.id == "mascot" }) {
-            try {
-                context.assets.open("mascot-directions.png").close()
-                list.add(0, Option("mascot", "Fox", listOf("mascot-directions.png")))
-            } catch (_: Exception) {}
-        }
 
         // 2. Custom characters in app storage
         val customDir = java.io.File(context.getExternalFilesDir(null), "custom_characters")
@@ -73,8 +66,7 @@ object CharacterThumb {
         } else {
             val candidates = listOf(
                 "characters/$characterId/directions.png",
-                "characters/$characterId/directions.jpg",
-                "mascot-directions.png"
+                "characters/$characterId/directions.jpg"
             )
             candidates.firstNotNullOfOrNull { path ->
                 try {
