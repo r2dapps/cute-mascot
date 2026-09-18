@@ -90,35 +90,120 @@ This repository is pre-configured with a GitHub Actions workflow for zero-config
 
 ---
 
-## 🎭 How to Swap Different Character Sheets
+---
 
-You can easily use different character sheets with `DesktopMascot.exe` or `app.py`!
+## 🎨 How Anyone Can Make Their Own Custom Character & Reactions with AI
 
-### Method 1: Via the Right-Click Menu
-1. Right-click the mascot on your desktop.
-2. Hover over **🎭 Switch Character**.
-3. Select any installed character, or click **📂 Open Characters Folder...** to open the folder in Windows File Explorer.
+You can create your own custom companion using **ChatGPT (GPT-4o / DALL-E 3)**, **Midjourney**, or any image generation tool! 
 
-### Method 2: Adding Your Own Custom Characters
-1. In the folder where `DesktopMascot.exe` is located, go into the `characters/` directory:
-   ```
-   characters/
-   ├── mascot/
-   │   ├── directions.png
-   │   └── reactions.png
-   ├── my_hero/
-   │   ├── directions.png
-   │   └── reactions.png
-   └── cat/
-       ├── directions.png
-       └── reactions.png
-   ```
-2. Create a new folder (e.g. `characters/my_hero/`).
-3. Add your two 3×3 grid sprite sheets:
-   - **`directions.png`** *(required)*: 3×3 grid with 8 head directions + center looking forward.
-   - **`reactions.png`** *(optional)*: 3×3 grid with 9 emotion tiles (hearts, sparkles, dizzy, etc.). If omitted, neutral center is used.
-4. Right-click the mascot -> **🎭 Switch Character** -> Your character appears automatically!
-5. Your active character is remembered across app restarts in `mascot_config.json`.
+Both Windows Desktop and Android use standardized **3×3 grid sprite sheets**:
+- **`directions.png`** (9 frames): The character turning their head/eyes to 8 directions around a center frame.
+- **`reactions.png`** (9 frames): 9 emotional reactions triggered by taps, clicks, and idle peeking.
+
+### 📐 3×3 Grid Layout Specifications
+
+#### 1. Look Directions (`directions.png`)
+```
++---------------+---------------+---------------+
+|    Up-Left    |      Up       |   Up-Right    |
++---------------+---------------+---------------+
+|     Left      | Center (Idle) |     Right     |
++---------------+---------------+---------------+
+|   Down-Left   |     Down      |  Down-Right   |
++---------------+---------------+---------------+
+```
+
+#### 2. Emotional Reactions (`reactions.png`)
+```
++---------------+---------------+---------------+
+| Blink / Calm  |     Heart     |    Sparkle    |
++---------------+---------------+---------------+
+|   Surprise    |  Wink / Smile |     Blush     |
++---------------+---------------+---------------+
+| Sleepy (Zzz)  |     Dizzy     |   Delighted   |
++---------------+---------------+---------------+
+```
+
+---
+
+### 📋 Ready-to-Paste AI Prompts (Copy & Paste into ChatGPT / Midjourney)
+
+#### Prompt 1: 3×3 Look Directions Sheet (`directions.png`)
+```text
+A high-resolution 3x3 sprite sheet on a solid pure magenta (#FF00FF) background containing exactly 9 equal-sized square frames of the same cute chibi character.
+The character must stay in the exact same spot in each frame, only turning their head and eyes to look in 9 directions matching a 3x3 grid:
+Row 1: [Top-Left: looking up-left], [Top-Center: looking straight up], [Top-Right: looking up-right]
+Row 2: [Mid-Left: looking left], [Mid-Center: looking directly forward at camera], [Mid-Right: looking right]
+Row 3: [Bottom-Left: looking down-left], [Bottom-Center: looking straight down], [Bottom-Right: looking down-right]
+Consistent character design across all 9 panels: cute chibi anime style with clean outlines, vibrant colors, same clothes and hair, neatly aligned on a strict 3x3 grid with no overlapping frames and no text or borders.
+```
+
+#### Prompt 2: 3×3 Reactions Sheet (`reactions.png`)
+```text
+A high-resolution 3x3 sprite sheet on a solid pure magenta (#FF00FF) background containing exactly 9 equal-sized square frames of the same cute chibi character expressing 9 distinct emotional reactions:
+Row 1: [Top-Left: neutral blinking eyes], [Top-Center: floating pink love hearts with happy closed-eye smile], [Top-Right: sparkling excited eyes with golden glimmers]
+Row 2: [Mid-Left: surprised gasp with wide round eyes (O_O)], [Mid-Center: playful cute wink with tongue slightly out], [Mid-Right: deep blushing cheeks, shy happy smile]
+Row 3: [Bottom-Left: peaceful sleeping (Zzz float)], [Bottom-Center: dizzy cartoon spiral eyes (swirly)], [Bottom-Right: joyful radiant laugh / delighted wide grin]
+Consistent character design matching the same character, clean outlines, no borders between cells, perfectly aligned 3x3 grid, zero text.
+```
+
+---
+
+### 📲 Importing Custom Characters on Android
+
+Our Android app allows you to import your custom character sheets directly from your phone!
+
+1. Generate your character with AI and save the image to your phone gallery or files.
+2. Open **Cute Mascot** on Android.
+3. Scroll down to the **Character** section and tap **"⭐ Import Custom PNG"**.
+4. Enter your character's name.
+5. Select your 3×3 `directions.png` from your device storage.
+6. Done! A new `⭐ <Name>` tile appears in your character selector, and your custom mascot immediately floats and animates on your screen!
+
+---
+
+### 💻 Adding Custom Characters on Windows Desktop
+
+1. In the folder where `DesktopMascot.exe` is located, open `characters/`.
+2. Create a new subfolder (e.g., `characters/my_hero/`).
+3. Place your two 3×3 sheets inside:
+   - `characters/my_hero/directions.png` *(required)*
+   - `characters/my_hero/reactions.png` *(optional)*
+4. Right-click the desktop mascot ➔ **🎭 Switch Character** ➔ Select your character!
+*(Tip: To make backgrounds transparent automatically from solid color, run `python process_sheets.py`)*
+
+---
+
+## 📱 Android OS Compatibility & Sideload Guide
+
+| Android Version | API Level | Status | Notes |
+| :--- | :--- | :--- | :--- |
+| **Android 14 & 15 & 16 Preview** | API 34+ | Supported | Requires 3-dots "Allow restricted settings" unlock for sideloaded APKs |
+| **Android 13** | API 33 | Supported | Requires notification permission grant |
+| **Android 12 & 12L** | API 31–32 | Supported | Exact alarm permission toggle available |
+| **Android 8.0 – 11** | API 26–30 | Supported | Smooth overlay and touch tracking out of the box |
+
+### 🔑 Android 13/14+ Sideloading Setup (3-Dots Unlock):
+Because Android 13 and 14 protect sideloaded APKs by default, follow these quick steps:
+1. When installing, tap **Install anyway** if prompted by Google Play Protect.
+2. Open the **Cute Mascot** app.
+3. In the setup guide card, tap **Step 1: Open App Info**.
+4. In the top-right corner of the system App Info page, tap the **3 dots (⋮)** and select **Allow restricted settings** (enter phone PIN/fingerprint).
+5. Return to Cute Mascot and tap **Step 2: Display Over Other Apps** ➔ toggle **ON**.
+6. Tap **Step 3: Alarms & Reminders** ➔ toggle **ON** (allows exact health voice reminders).
+7. Tap **Show mascot** ➔ Your companion floats happily on your screen!
+
+---
+
+## 🎭 Bundled page-mascot Cast
+
+Many character sheets under `characters/` come from the open-source [page-mascot](https://github.com/nilbuild/page-mascot) project (see Credits). If you keep a local `reference-page-mascot/` clone, refresh the pack anytime with:
+
+```bash
+python sync_reference_characters.py
+```
+
+That copies every reference character folder into `characters/` (without overwriting personal characters).
 
 ---
 
@@ -184,25 +269,30 @@ Desktop-Mascot/
 │   ├── icon.png               # Application icon (PNG)
 │   └── icon.ico               # Application tray icon (ICO)
 │
-├── characters/                # Hot-swappable character folders
-│   └── mascot/                # Custom Girl Mascot character sheets
+├── characters/                # Hot-swappable character folders (includes page-mascot cast)
+│   ├── mascot/                # Custom girl / fox mascot sheets
+│   ├── chibi/ · guy/ · …      # App skins
+│   └── fox/ · cat/ · …        # Bundled page-mascot characters (see Credits)
+│
+├── sync_reference_characters.py  # Refresh characters/ from local page-mascot clone
 │
 ├── web/                       # Web Showcase & Playground
 │   ├── index.html             # Interactive showcase
 │   ├── style.css              # Modern aesthetic styling
 │   └── mascot.js              # Mascot engine and sound synthesizer
 │
-└── reference-page-mascot/     # Local reference repository (ignored by git)
+└── reference-page-mascot/     # Optional local clone of page-mascot (gitignored)
 ```
 
 ---
 
 ## 🙏 Acknowledgements & Credits
 
-Special thanks and appreciation to **[@nilbuild](https://github.com/nilbuild)** for creating the wonderful **[page-mascot](https://github.com/nilbuild/page-mascot)** open-source project. 
+Special thanks and appreciation to **[@nilbuild](https://github.com/nilbuild)** for creating the wonderful **[page-mascot](https://github.com/nilbuild/page-mascot)** open-source project.
 
 The 3×3 cursor-tracking architecture, angle sector math, and boop physics in this repository are deeply inspired by and built upon the foundational work established in `page-mascot`.
 
+**Character sheets:** many bundled folders under `characters/` (fox, cat, otter, knight, and dozens more) are the original page-mascot sprite packs, included here so DesktopMascot can ship that cast without requiring a separate clone. Please keep attribution to [@nilbuild / page-mascot](https://github.com/nilbuild/page-mascot) when redistributing those assets.
 ---
 
 ## 📄 License

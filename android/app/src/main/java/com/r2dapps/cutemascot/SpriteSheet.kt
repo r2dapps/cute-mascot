@@ -37,6 +37,20 @@ class SpriteSheet(private val context: Context, private val characterId: String 
     }
 
     private fun loadDirections() {
+        val customDir = java.io.File(context.getExternalFilesDir(null), "custom_characters/$characterId")
+        if (customDir.exists()) {
+            val file = java.io.File(customDir, "directions.png").takeIf { it.exists() }
+                ?: java.io.File(customDir, "directions.jpg").takeIf { it.exists() }
+            if (file != null) {
+                val bmp = BitmapFactory.decodeFile(file.absolutePath)
+                if (bmp != null) {
+                    sliceGrid(bmp, 3, 3, directionKeys, dirTiles)
+                    bmp.recycle()
+                    return
+                }
+            }
+        }
+
         val candidates = when (characterId) {
             "char1", "mascot" -> listOf("mascot-directions.png", "characters/mascot/directions.png")
             else -> listOf("characters/$characterId/directions.png", "characters/$characterId/directions.jpg")
@@ -49,6 +63,20 @@ class SpriteSheet(private val context: Context, private val characterId: String 
     }
 
     private fun loadReactions() {
+        val customDir = java.io.File(context.getExternalFilesDir(null), "custom_characters/$characterId")
+        if (customDir.exists()) {
+            val file = java.io.File(customDir, "reactions.png").takeIf { it.exists() }
+                ?: java.io.File(customDir, "reactions.jpg").takeIf { it.exists() }
+            if (file != null) {
+                val bmp = BitmapFactory.decodeFile(file.absolutePath)
+                if (bmp != null) {
+                    sliceGrid(bmp, 3, 3, reactionKeys, reactTiles)
+                    bmp.recycle()
+                    return
+                }
+            }
+        }
+
         val candidates = when (characterId) {
             "char1", "mascot" -> listOf("mascot-reactions.png", "characters/mascot/reactions.png")
             else -> listOf("characters/$characterId/reactions.png", "characters/$characterId/reactions.jpg")

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎨 AI Character Prompt Studio"
+            android:textColor="@color/colorPrimary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Generate any character using ChatGPT (GPT-4o / DALL-E) or Midjourney, then import the 3x3 sheet directly into this app!"
+            android:textColor="@color/textSecondary"
+            android:textSize="12.5sp"
+            android:lineSpacingExtra="2dp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Prompt 1 Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="12dp"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1 · 3x3 Look Directions (Required)"
+                android:textColor="@color/textPrimary"
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Generates 9 frames (8 head directions + center neutral frame) for cursor and touch tracking."
+                android:textColor="@color/textMuted"
+                android:textSize="11.5sp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tvPromptDirections"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_screen"
+                android:padding="10dp"
+                android:fontFamily="monospace"
+                android:textSize="11sp"
+                android:textColor="#FCE7F3"
+                android:maxLines="6"
+                android:scrollbars="vertical"
+                android:text="A high-resolution 3x3 sprite sheet on a solid pure magenta (#FF00FF) background containing exactly 9 equal-sized square frames of the same cute chibi character.\nThe character must stay in the exact same spot in each frame, only turning their head and eyes to look in 9 directions matching a 3x3 grid:\nRow 1: [Top-Left: looking up-left], [Top-Center: looking straight up], [Top-Right: looking up-right]\nRow 2: [Mid-Left: looking left], [Mid-Center: looking directly forward at camera], [Mid-Right: looking right]\nRow 3: [Bottom-Left: looking down-left], [Bottom-Center: looking straight down], [Bottom-Right: looking down-right]\nConsistent character design across all 9 panels: cute chibi anime style with clean outlines, vibrant colors, same clothes and hair, neatly aligned on a strict 3x3 grid with no overlapping frames and no text or borders."
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCopyDirections"
+                style="@style/Widget.CuteMascot.Button.Chip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📋 Copy Directions Prompt"/>
+        </LinearLayout>
+
+        <!-- Prompt 2 Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="12dp"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2 · 3x3 Emotional Reactions (Optional)"
+                android:textColor="@color/textPrimary"
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Generates 9 emotion tiles (hearts, blush, dizzy, surprised, wink, sparkles) for boops and idle animations."
+                android:textColor="@color/textMuted"
+                android:textSize="11.5sp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tvPromptReactions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_screen"
+                android:padding="10dp"
+                android:fontFamily="monospace"
+                android:textSize="11sp"
+                android:textColor="#FCE7F3"
+                android:maxLines="6"
+                android:scrollbars="vertical"
+                android:text="A high-resolution 3x3 sprite sheet on a solid pure magenta (#FF00FF) background containing exactly 9 equal-sized square frames of the same cute chibi character expressing 9 distinct emotional reactions:\nRow 1: [Top-Left: neutral blinking eyes], [Top-Center: floating pink love hearts with happy closed-eye smile], [Top-Right: sparkling excited eyes with golden glimmers]\nRow 2: [Mid-Left: surprised gasp with wide round eyes (O_O)], [Mid-Center: playful cute wink with tongue slightly out], [Mid-Right: deep blushing cheeks, shy happy smile]\nRow 3: [Bottom-Left: peaceful sleeping (Zzz float)], [Bottom-Center: dizzy cartoon spiral eyes (swirly)], [Bottom-Right: joyful radiant laugh / delighted wide grin]\nConsistent character design matching the same character, clean outlines, no borders between cells, perfectly aligned 3x3 grid, zero text."
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCopyReactions"
+                style="@style/Widget.CuteMascot.Button.Chip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📋 Copy Reactions Prompt"/>
+        </LinearLayout>
+
+        <!-- Quick How-to-Import Guide -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💡 How to use: Copy prompt → Paste into ChatGPT/Midjourney → Save image to phone → Tap 'Import Custom Mascot' button below to make your character float immediately!"
+            android:textColor="@color/colorAccent"
+            android:textSize="11.5sp"
+            android:lineSpacingExtra="2dp"
+            android:padding="6dp"/>
+
+    </LinearLayout>
+</ScrollView>

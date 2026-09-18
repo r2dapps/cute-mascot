@@ -185,11 +185,92 @@
         </div>
 
         <div class="guide-box" id="installGuideBox" style="display: none; margin-top: 16px; padding: 14px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,215,0,0.25); border-radius: 12px; font-size: 0.84rem; line-height: 1.55;">
-          <strong style="color: #ffd700;">Android Sideload Instructions:</strong><br>
+          <strong style="color: #ffd700;">Android Sideload &amp; Permissions Guide (Android 8.0 &ndash; 16):</strong><br>
           1. Tap <em>Install anyway</em> if Play Protect prompts.<br>
-          2. Open Cute Mascot &rarr; tap <em>1. Open App Info</em>.<br>
-          3. Tap 3 dots (⋮) in top-right &rarr; <em>Allow restricted settings</em>.<br>
-          4. Return &amp; tap <em>2. Enable Display Over Apps</em> &rarr; Done!
+          2. Open Cute Mascot &rarr; tap <em>Step 1: Open App Info</em>.<br>
+          3. Tap the 3 dots (&#8942;) in top-right corner &rarr; tap <em>Allow restricted settings</em>.<br>
+          4. Return to app &rarr; tap <em>Step 2: Display Over Other Apps</em> &rarr; toggle ON.<br>
+          5. Tap <em>Step 3: Alarms &amp; Reminders</em> &rarr; toggle ON (for health voice reminders).<br>
+          6. Tap <em>Show mascot</em> &rarr; your companion floats on your home screen &amp; all apps!
+        </div>
+      </div>
+
+      <!-- AI Mascot Studio Card -->
+      <div class="glass-card ai-studio-card" style="grid-column: 1 / -1;">
+        <div class="card-badge" style="background: rgba(236, 72, 153, 0.15); color: #ec4899; border-color: rgba(236, 72, 153, 0.3);">AI Character Studio</div>
+        <h2>Create Your Own Custom Mascot with AI</h2>
+        <p>
+          You can create completely custom characters for Cute Mascot using <strong>ChatGPT (GPT-4o / DALL-E 3)</strong>, <strong>Midjourney</strong>, or any image generator!
+          Both Desktop and Android use standardized <strong>3&times;3 grid sprite sheets</strong>. On Android, you can upload your custom PNG directly inside the app using the <strong>Import Custom PNG</strong> button!
+        </p>
+
+        <!-- Grid Layout Visualization -->
+        <div class="grid-spec-row">
+          <div class="spec-col">
+            <h3>1. Head Look Directions (3&times;3 Grid)</h3>
+            <div class="mini-grid">
+              <div class="mini-cell">Up-Left</div><div class="mini-cell">Up</div><div class="mini-cell">Up-Right</div>
+              <div class="mini-cell">Left</div><div class="mini-cell active-cell">Center</div><div class="mini-cell">Right</div>
+              <div class="mini-cell">Down-Left</div><div class="mini-cell">Down</div><div class="mini-cell">Down-Right</div>
+            </div>
+          </div>
+          <div class="spec-col">
+            <h3>2. Emotional Reactions (3&times;3 Grid)</h3>
+            <div class="mini-grid">
+              <div class="mini-cell">Blink</div><div class="mini-cell">Hearts</div><div class="mini-cell">Sparkle</div>
+              <div class="mini-cell">Surprise</div><div class="mini-cell">Wink</div><div class="mini-cell">Blush</div>
+              <div class="mini-cell">Sleepy</div><div class="mini-cell">Dizzy</div><div class="mini-cell">Delighted</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Copyable Prompts -->
+        <div class="prompt-box-container">
+          <div class="prompt-block">
+            <div class="prompt-header">
+              <span>Prompt 1: 3&times;3 Look Directions Sheet (<code>directions.png</code>)</span>
+              <button type="button" class="copy-prompt-btn" data-target="promptDirections">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>Copy Prompt</span>
+              </button>
+            </div>
+            <pre class="prompt-text" id="promptDirections">A high-resolution 3x3 sprite sheet on a solid pure magenta (#FF00FF) background containing exactly 9 equal-sized square frames of the same cute chibi character.
+The character must stay in the exact same spot in each frame, only turning their head and eyes to look in 9 directions matching a 3x3 grid:
+Row 1: [Top-Left: looking up-left], [Top-Center: looking straight up], [Top-Right: looking up-right]
+Row 2: [Mid-Left: looking left], [Mid-Center: looking directly forward at camera], [Mid-Right: looking right]
+Row 3: [Bottom-Left: looking down-left], [Bottom-Center: looking straight down], [Bottom-Right: looking down-right]
+Consistent character design across all 9 panels: cute chibi anime style with clean outlines, vibrant colors, same clothes and hair, neatly aligned on a strict 3x3 grid with no overlapping frames and no text or borders.</pre>
+          </div>
+
+          <div class="prompt-block">
+            <div class="prompt-header">
+              <span>Prompt 2: 3&times;3 Emotional Reactions Sheet (<code>reactions.png</code>)</span>
+              <button type="button" class="copy-prompt-btn" data-target="promptReactions">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>Copy Prompt</span>
+              </button>
+            </div>
+            <pre class="prompt-text" id="promptReactions">A high-resolution 3x3 sprite sheet on a solid pure magenta (#FF00FF) background containing exactly 9 equal-sized square frames of the same cute chibi character expressing 9 distinct emotional reactions:
+Row 1: [Top-Left: neutral blinking eyes], [Top-Center: floating pink love hearts with happy closed-eye smile], [Top-Right: sparkling excited eyes with golden glimmers]
+Row 2: [Mid-Left: surprised gasp with wide round eyes (O_O)], [Mid-Center: playful cute wink with tongue slightly out], [Mid-Right: deep blushing cheeks, shy happy smile]
+Row 3: [Bottom-Left: peaceful sleeping (Zzz float)], [Bottom-Center: dizzy cartoon spiral eyes (swirly)], [Bottom-Right: joyful radiant laugh / delighted wide grin]
+Consistent character design matching the same character, clean outlines, no borders between cells, perfectly aligned 3x3 grid, zero text.</pre>
+          </div>
+        </div>
+
+        <div class="import-instructions-bar">
+          <div class="instruction-item">
+            <strong>On Android:</strong> Save the generated PNG to your phone &rarr; Open Cute Mascot &rarr; Tap <strong>Import Custom PNG</strong> &rarr; Enter character name &rarr; Pick the PNG &rarr; Done! It floats instantly.
+          </div>
+          <div class="instruction-item">
+            <strong>On Desktop:</strong> Make background transparent (or run <code>python process_sheets.py</code>) &rarr; save as <code>characters/my_character/directions.png</code> &rarr; Right-click desktop mascot &rarr; Switch Character!
+          </div>
         </div>
       </div>
     </section>

@@ -5,7 +5,7 @@
   "always_on_top": true,
   "teleport_enabled": false,
   "voice_enabled": true,
-  "voice_type": "japanese",
+  "voice_type": "godavari",
   "voice_pitch": "+10Hz",
   "voice_rate": "+8%",
   "reminders_enabled": false,

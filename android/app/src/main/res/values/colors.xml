@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#FF6B3FA0</color>
-    <color name="colorPrimaryDark">#FF121622</color>
-    <color name="colorAccent">#FFFF69B4</color>
-    <color name="backgroundColor">#FF121622</color>
+    <!-- Charcoal + soft coral — not purple-glow AI default -->
+    <color name="colorPrimary">#FFE07A6E</color>
+    <color name="colorPrimaryDark">#FF0B0D10</color>
+    <color name="colorAccent">#FFE07A6E</color>
+    <color name="accent">#FFE07A6E</color>
+    <color name="backgroundColor">#FF0B0D10</color>
+    <color name="surface">#FF141820</color>
+    <color name="surfaceElevated">#FF1A1F28</color>
+    <color name="outline">#FF2A3140</color>
+    <color name="textPrimary">#FFF4F1EC</color>
+    <color name="textSecondary">#FF9AA3B2</color>
+    <color name="textMuted">#FF6B7380</color>
+    <color name="accentSoft">#33E07A6E</color>
+    <color name="accentMint">#FF6EC4B8</color>
+    <color name="statusOk">#FF6EC4B8</color>
+    <color name="statusWarn">#FFE8B86D</color>
+    <color name="chipBg">#FF1E2430</color>
+    <color name="chipPressed">#FFE07A6E</color>
 </resources>

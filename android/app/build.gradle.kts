@@ -11,18 +11,26 @@ android {
         applicationId = "com.r2dapps.cutemascot"
         minSdk = 26          // Android 8.0 Oreo (TYPE_APPLICATION_OVERLAY support)
         targetSdk = 34
-        versionCode = 14     // v1.3.0
-        versionName = "1.3.0"
+        versionCode = 18     // v1.4.1
+        versionName = "1.4.1"
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            enableV1Signing = true
+            enableV2Signing = true
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {
             isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 

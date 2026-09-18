@@ -524,6 +524,35 @@ class CompanionManager {
       }
     });
 
+    // Copy Prompt Buttons with visual feedback
+    document.querySelectorAll('.copy-prompt-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const targetId = btn.getAttribute('data-target');
+        const textEl = document.getElementById(targetId);
+        if (!textEl) return;
+        const text = textEl.innerText.trim();
+        try {
+          await navigator.clipboard.writeText(text);
+          const originalHTML = btn.innerHTML;
+          btn.classList.add('copied');
+          btn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Copied!</span>
+          `;
+          playRomanticChime(783.99, 0.2);
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = originalHTML;
+          }, 2500);
+        } catch (err) {
+          console.warn('Clipboard write failed, fallback select:', err);
+          window.getSelection()?.selectAllChildren(textEl);
+        }
+      });
+    });
+
     // Default to restored Chibi skin
     setSkin('chibi');
   }

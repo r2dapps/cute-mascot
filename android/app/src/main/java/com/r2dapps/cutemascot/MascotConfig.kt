@@ -1,7 +1,6 @@
 package com.r2dapps.cutemascot
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import org.json.JSONObject
 
@@ -9,7 +8,7 @@ data class ReminderItem(val id: String, val text: String, val audio: String?)
 
 /**
  * Loads mascot_config.json defaults from assets, overridden and persisted
- * via Android SharedPreferences for full desktop feature parity.
+ * via Android SharedPreferences.
  */
 class MascotConfig(private val context: Context) {
 
@@ -26,6 +25,7 @@ class MascotConfig(private val context: Context) {
         const val KEY_SOUND_ENABLED = "sound_enabled"
         const val KEY_TRACKING_MODE = "tracking_mode"
         const val KEY_INVERT_GYRO = "invert_gyro"
+        const val KEY_USE_24_HOUR = "use_24_hour"
     }
 
     private val prefs: SharedPreferences =
@@ -53,7 +53,7 @@ class MascotConfig(private val context: Context) {
         }
 
     var mascotSizeDp: Int
-        get() = prefs.getInt(KEY_MASCOT_SIZE, 160)
+        get() = prefs.getInt(KEY_MASCOT_SIZE, defaultMascotSize)
         set(value) {
             prefs.edit().putInt(KEY_MASCOT_SIZE, value).apply()
             notifyChange()
@@ -63,6 +63,7 @@ class MascotConfig(private val context: Context) {
         get() = prefs.getBoolean(KEY_REMINDERS_ENABLED, defaultRemindersEnabled)
         set(value) {
             prefs.edit().putBoolean(KEY_REMINDERS_ENABLED, value).apply()
+            ReminderScheduler.reschedule(context)
             notifyChange()
         }
 
@@ -70,6 +71,7 @@ class MascotConfig(private val context: Context) {
         get() = prefs.getLong(KEY_REMINDER_INTERVAL, defaultReminderIntervalMin)
         set(value) {
             prefs.edit().putLong(KEY_REMINDER_INTERVAL, value).apply()
+            ReminderScheduler.reschedule(context)
             notifyChange()
         }
 
@@ -94,29 +96,41 @@ class MascotConfig(private val context: Context) {
             notifyChange()
         }
 
+    var use24HourFormat: Boolean
+        get() = prefs.getBoolean(
+            KEY_USE_24_HOUR,
+            android.text.format.DateFormat.is24HourFormat(context)
+        )
+        set(value) {
+            prefs.edit().putBoolean(KEY_USE_24_HOUR, value).apply()
+            notifyChange()
+        }
+
     var voicePitch = "+10Hz"
     var voiceRate = "+8%"
     val reminders = mutableListOf<ReminderItem>()
     val japaneseReminders = mutableListOf<ReminderItem>()
 
     private var defaultCharacter = "chibi"
-    private var defaultVoiceType = "japanese"
-    private var defaultVoiceEnabled = false
-    private var defaultRemindersEnabled = false
+    private var defaultVoiceType = "godavari"
+    private var defaultVoiceEnabled = true
+    private var defaultRemindersEnabled = true
     private var defaultReminderIntervalMin = 30L
-    private var defaultSoundEnabled = false
+    private var defaultSoundEnabled = true
+    private var defaultMascotSize = 160
 
     init {
         try {
             val json = JSONObject(context.assets.open("mascot_config.json").bufferedReader().readText())
             defaultCharacter = json.optString("character", "chibi")
-            defaultVoiceType = json.optString("voice_type", "japanese")
+            defaultVoiceType = json.optString("voice_type", "godavari")
             voicePitch = json.optString("voice_pitch", "+10Hz")
             voiceRate = json.optString("voice_rate", "+8%")
-            defaultVoiceEnabled = json.optBoolean("voice_enabled", false)
-            defaultRemindersEnabled = json.optBoolean("reminders_enabled", false)
+            defaultVoiceEnabled = json.optBoolean("voice_enabled", true)
+            defaultRemindersEnabled = json.optBoolean("reminders_enabled", true)
             defaultReminderIntervalMin = json.optLong("reminder_interval_min", 30)
             defaultSoundEnabled = json.optBoolean("sound_enabled", false)
+            defaultMascotSize = json.optInt("size", 160).coerceIn(100, 260)
 
             val rl = json.optJSONArray("reminders_list")
             if (rl != null) {
@@ -147,7 +161,6 @@ class MascotConfig(private val context: Context) {
     }
 
     private fun notifyChange() {
-        // Direct call to running service instance for instantaneous updates
         MascotOverlayService.instance?.applyConfigUpdates()
     }
 }

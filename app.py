@@ -19,6 +19,7 @@ import winreg
 import threading
 import winsound
 import hashlib
+import subprocess
 from ctypes import wintypes
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -145,6 +146,10 @@ def get_exe_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 EXE_DIR = get_exe_dir()
+try:
+    os.chdir(EXE_DIR)
+except Exception:
+    pass
 
 if getattr(sys, 'frozen', False):
     BUNDLE_DIR = getattr(sys, '_MEIPASS', EXE_DIR)
@@ -343,8 +348,19 @@ class WNDCLASSEX(ctypes.Structure):
         ("hIconSm", wintypes.HICON)
     ]
 
-# Registry Startup Helpers
+# Registry & Startup Folder Helpers
+def get_startup_shortcut_path():
+    appdata = os.environ.get("APPDATA")
+    if not appdata:
+        return None
+    return os.path.join(appdata, "Microsoft", "Windows", "Start Menu", "Programs", "Startup", f"{APP_REG_NAME}.lnk")
+
 def is_startup_enabled():
+    # Check Windows Startup folder shortcut first
+    lnk = get_startup_shortcut_path()
+    if lnk and os.path.exists(lnk):
+        return True
+    # Fallback check HKCU Run key
     try:
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_RUN_KEY, 0, winreg.KEY_READ)
         val, _ = winreg.QueryValueEx(key, APP_REG_NAME)
@@ -354,13 +370,55 @@ def is_startup_enabled():
         return False
 
 def set_startup_enabled(enable: bool):
+    target_exe = os.path.abspath(sys.executable)
+    working_dir = EXE_DIR
+    lnk_path = get_startup_shortcut_path()
+
+    # 1. Update Windows Startup folder shortcut (most reliable on Win 10/11)
+    if lnk_path:
+        try:
+            if enable:
+                actual_exe = target_exe
+                if not getattr(sys, 'frozen', False):
+                    pythonw = os.path.join(os.path.dirname(sys.executable), "pythonw.exe")
+                    if os.path.exists(pythonw):
+                        actual_exe = pythonw
+
+                created = False
+                try:
+                    import win32com.client
+                    shell = win32com.client.Dispatch("WScript.Shell")
+                    shortcut = shell.CreateShortcut(lnk_path)
+                    shortcut.TargetPath = actual_exe
+                    shortcut.WorkingDirectory = working_dir
+                    if not getattr(sys, 'frozen', False):
+                        shortcut.Arguments = f'"{os.path.abspath(__file__)}"'
+                    shortcut.Save()
+                    created = True
+                except Exception:
+                    pass
+
+                if not created:
+                    if getattr(sys, 'frozen', False):
+                        ps_cmd = f"$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('{lnk_path}'); $s.TargetPath = '{actual_exe}'; $s.WorkingDirectory = '{working_dir}'; $s.Save()"
+                    else:
+                        script_path = os.path.abspath(__file__)
+                        ps_cmd = f"$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('{lnk_path}'); $s.TargetPath = '{actual_exe}'; $s.Arguments = '\"{script_path}\"'; $s.WorkingDirectory = '{working_dir}'; $s.Save()"
+                    subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd], capture_output=True)
+            else:
+                if os.path.exists(lnk_path):
+                    os.remove(lnk_path)
+        except Exception as err:
+            print("Startup shortcut error:", err)
+
+    # 2. Update HKCU Run registry key
     try:
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_RUN_KEY, 0, winreg.KEY_SET_VALUE)
         if enable:
             if getattr(sys, 'frozen', False):
-                cmd = f'"{os.path.abspath(sys.executable)}"'
+                cmd = f'"{target_exe}"'
             else:
-                cmd = f'"{os.path.abspath(sys.executable)}" "{os.path.abspath(__file__)}"'
+                cmd = f'"{target_exe}" "{os.path.abspath(__file__)}"'
             winreg.SetValueEx(key, APP_REG_NAME, 0, winreg.REG_SZ, cmd)
         else:
             try:

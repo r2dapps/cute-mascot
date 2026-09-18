@@ -21,6 +21,7 @@ class SpeechController(private val context: Context) {
     private var mediaPlayer: MediaPlayer? = null
     private var tts: TextToSpeech? = null
     private var ttsReady = false
+    private var pendingVoiceType: String? = null
 
     private val voiceNotesDir: File
         get() = File(context.getExternalFilesDir(null), "voice_notes").also { it.mkdirs() }
@@ -29,20 +30,19 @@ class SpeechController(private val context: Context) {
         tts = TextToSpeech(context) { status ->
             ttsReady = (status == TextToSpeech.SUCCESS)
             if (ttsReady) {
-                tts?.language = Locale("te", "IN")  // Telugu default; Japanese handled per-speak call
-                tts?.setSpeechRate(1.1f)
-                tts?.setPitch(1.1f)
+                applyVoiceType(pendingVoiceType ?: "godavari")
             }
         }
     }
 
     // Called by MascotView when voice type changes
     fun applyVoiceType(voiceType: String) {
+        pendingVoiceType = voiceType
         if (!ttsReady) return
         if (voiceType == "japanese") {
             tts?.language = Locale.JAPANESE
-            tts?.setSpeechRate(0.85f)   // Slower = more deliberate anime cadence
-            tts?.setPitch(1.28f)         // Higher = hot anime female pitch
+            tts?.setSpeechRate(0.85f)
+            tts?.setPitch(1.28f)
         } else {
             tts?.language = Locale("te", "IN")
             tts?.setSpeechRate(1.1f)
@@ -141,7 +141,7 @@ class SpeechController(private val context: Context) {
         try { mediaPlayer?.start() } catch (_: Exception) {}
     }
 
-    private fun stopCurrent() {
+    fun stopCurrent() {
         try { mediaPlayer?.stop(); mediaPlayer?.release() } catch (_: Exception) {}
         mediaPlayer = null
         tts?.stop()

@@ -3,8 +3,6 @@ package com.r2dapps.cutemascot
 import android.content.Context
 import android.graphics.*
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.view.Choreographer
@@ -69,6 +67,7 @@ class MascotView(context: Context) : View(context) {
     }
     private var bubbleText = ""
     private var bubbleEndMs = 0L
+    var isAlarmActive = false
 
     // Drag tracking
     private var dragRawStartX = 0f
@@ -82,11 +81,9 @@ class MascotView(context: Context) : View(context) {
     private var touchScreenY = -1f
     private var lastTouchMs = 0L
 
-    // Sensor tracker (gyro + touch, auto-selects)
+    // Sensor tracker (gyro only when trackingMode == "gyro")
     private lateinit var sensorTracker: SensorTracker
 
-    // Scheduled reminders
-    private val reminderHandler = Handler(Looper.getMainLooper())
     private val speechController: SpeechController
     val soundManager = SoundManager(context)
     private val config: MascotConfig
@@ -109,27 +106,29 @@ class MascotView(context: Context) : View(context) {
         config = MascotConfig(context)
         speechController = SpeechController(context)
         sensorTracker = SensorTracker(context) { gx, gy ->
+            // Gyro only drives look direction in gyro mode; recent touch can temporarily override
+            if (config.trackingMode != "gyro") return@SensorTracker
+            val now = System.currentTimeMillis()
+            if (touchScreenX >= 0 && now - lastTouchMs < 3500L) return@SensorTracker
             updateDirectionFromAngle(gx, gy)
         }
-        sensorTracker.invertTilt = config.invertGyro
+        syncTrackingSensors()
+        speechController.applyVoiceType(config.voiceType)
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         spriteSheet = SpriteSheet(context, config.character)
         phonemeTiles = spriteSheet.loadPhonemeTiles()
-        sensorTracker.invertTilt = config.invertGyro
-        sensorTracker.start()
+        syncTrackingSensors()
+        speechController.applyVoiceType(config.voiceType)
         Choreographer.getInstance().postFrameCallback(frameCallback)
-        if (config.remindersEnabled) {
-            scheduleNextReminder()
-        }
+        ReminderScheduler.reschedule(context)
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         Choreographer.getInstance().removeFrameCallback(frameCallback)
-        reminderHandler.removeCallbacksAndMessages(null)
         sensorTracker.stop()
     }
 
@@ -148,8 +147,7 @@ class MascotView(context: Context) : View(context) {
     fun resume() {
         isScreenOn = true
         speechController.resume()
-        sensorTracker.invertTilt = config.invertGyro
-        sensorTracker.start()
+        syncTrackingSensors()
         Choreographer.getInstance().postFrameCallback(frameCallback)
     }
 
@@ -157,7 +155,6 @@ class MascotView(context: Context) : View(context) {
         speechController.release()
         soundManager.release()
         sensorTracker.stop()
-        reminderHandler.removeCallbacksAndMessages(null)
         spriteSheet.recycle()
     }
 
@@ -166,12 +163,21 @@ class MascotView(context: Context) : View(context) {
             spriteSheet.recycle()
         } catch (_: Exception) {}
         spriteSheet = SpriteSheet(context, config.character)
-        sensorTracker.invertTilt = config.invertGyro
-        reminderHandler.removeCallbacksAndMessages(null)
-        if (config.remindersEnabled) {
-            scheduleNextReminder()
-        }
+        speechController.applyVoiceType(config.voiceType)
+        syncTrackingSensors()
+        ReminderScheduler.reschedule(context)
         postInvalidate()
+    }
+
+    /** Start gyro only when user selected gyro mode; otherwise stop it completely. */
+    private fun syncTrackingSensors() {
+        sensorTracker.invertTilt = config.invertGyro
+        if (config.trackingMode == "gyro" && sensorTracker.hasGyro) {
+            sensorTracker.enabled = true
+            sensorTracker.start()
+        } else {
+            sensorTracker.stop()
+        }
     }
 
     // ---- Tick: update state without drawing ----
@@ -188,7 +194,9 @@ class MascotView(context: Context) : View(context) {
             if (now > speakingUntilMs) {
                 isSpeaking = false
                 currentPhoneme = "M"
-                bubbleText = ""
+                if (!isAlarmActive) {
+                    bubbleText = ""
+                }
                 talkBounce = 0f
             } else {
                 val elapsed = (now - speakingStartMs) / 1000f
@@ -198,16 +206,19 @@ class MascotView(context: Context) : View(context) {
             }
         }
 
-        // Touch-based direction update
+        // Touch-based direction: primary in touch mode; temporary override while gyro is active
         val isRecentTouch = (touchScreenX >= 0 && (now - lastTouchMs < 3500L))
-        if (config.trackingMode == "touch" || isRecentTouch || !sensorTracker.hasGyro) {
-            if (touchScreenX >= 0) {
-                val loc = IntArray(2)
-                getLocationOnScreen(loc)
-                val cx = loc[0] + width / 2f
-                val cy = loc[1] + height / 2f
-                updateDirectionFromAngle(touchScreenX - cx, touchScreenY - cy)
-            }
+        val useTouch = when {
+            config.trackingMode == "touch" || !sensorTracker.hasGyro -> true
+            isRecentTouch -> true
+            else -> false
+        }
+        if (useTouch && touchScreenX >= 0) {
+            val loc = IntArray(2)
+            getLocationOnScreen(loc)
+            val cx = loc[0] + width / 2f
+            val cy = loc[1] + height / 2f
+            updateDirectionFromAngle(touchScreenX - cx, touchScreenY - cy)
         }
     }
 
@@ -275,16 +286,22 @@ class MascotView(context: Context) : View(context) {
     }
 
     private fun drawSpeechBubble(canvas: Canvas, text: String, totalW: Float, maxBubbleH: Float, mascotCenterX: Float) {
-        val words = text.split(" ")
+        val paragraphs = text.split("\n")
         val lines = mutableListOf<String>()
-        var cur = ""
-        for (w in words) {
-            val test = if (cur.isEmpty()) w else "$cur $w"
-            if (bubbleTextPaint.measureText(test) > (totalW - 40f) && cur.isNotEmpty()) {
-                lines += cur; cur = w
-            } else cur = test
+        for (para in paragraphs) {
+            val words = para.split(" ")
+            var cur = ""
+            for (w in words) {
+                val test = if (cur.isEmpty()) w else "$cur $w"
+                if (bubbleTextPaint.measureText(test) > (totalW - 36f) && cur.isNotEmpty()) {
+                    lines += cur
+                    cur = w
+                } else {
+                    cur = test
+                }
+            }
+            if (cur.isNotEmpty()) lines += cur
         }
-        if (cur.isNotEmpty()) lines += cur
 
         val lineH = 30f
         val padX = 14f
@@ -361,6 +378,12 @@ class MascotView(context: Context) : View(context) {
     }
 
     private fun triggerBoop() {
+        if (isAlarmActive) {
+            dismissActiveReminder()
+            ReminderReceiver.stopCurrentAlarmSound(context)
+            soundManager.playReaction("heart")
+            return
+        }
         val r = listOf("blush", "blush", "sparkle", "heart", "grin").random()
         reaction = r
         reactionEndMs = System.currentTimeMillis() + 850
@@ -380,28 +403,52 @@ class MascotView(context: Context) : View(context) {
         } catch (_: Exception) {}
     }
 
-    // ---- Reminders ----
-    private fun scheduleNextReminder() {
-        val intervalMs = (config.reminderIntervalMin * 60 * 1000L).coerceAtLeast(60_000L)
-        reminderHandler.postDelayed({
-            if (isScreenOn && config.remindersEnabled) triggerReminder()
-            scheduleNextReminder()
-        }, intervalMs)
+    // ---- Reminders (AlarmManager-driven; see ReminderScheduler) ----
+    fun triggerAlarmReminder(text: String, audioName: String?) {
+        isAlarmActive = true
+        bubbleText = "⏰ $text\n(Tap mascot to Stop)"
+        bubbleEndMs = Long.MAX_VALUE
+
+        speechController.applyVoiceType(config.voiceType)
+        val durationMs = if (config.voiceEnabled) {
+            speechController.speak(text, audioName) { }
+        } else {
+            4500
+        }
+        isSpeaking = config.voiceEnabled
+        speakingStartMs = System.currentTimeMillis()
+        speakingUntilMs = speakingStartMs + durationMs
+        if (config.voiceEnabled) {
+            phonemeTimeline = PhonemeTimeline.build(text, durationMs / 1000f)
+            currentPhoneme = phonemeTimeline.firstOrNull()?.third ?: "A"
+        }
+        postInvalidate()
+    }
+
+    fun dismissActiveReminder() {
+        if (!isAlarmActive && bubbleText.isEmpty()) return
+        isAlarmActive = false
+        bubbleText = ""
+        bubbleEndMs = 0L
+        isSpeaking = false
+        speechController.stopCurrent()
+        postInvalidate()
     }
 
     fun triggerReminder() {
         val pool = if (config.voiceType == "japanese") config.japaneseReminders else config.reminders
         if (pool.isEmpty()) return
         val item = pool.random()
+        triggerReminder(item.text, item.audio)
+    }
 
-        // 1. Post system notification banner
-        MascotOverlayService.instance?.showReminderNotification("🎀 Cute Mascot", item.text)
-
-        // 2. Speak dialogue or display anime speech bubble
-        speakDialogue(item.text, item.audio)
+    fun triggerReminder(text: String, audioName: String?) {
+        MascotOverlayService.instance?.showReminderNotification("Cute Mascot", text)
+        speakDialogue(text, audioName)
     }
 
     fun speakDialogue(text: String, audioName: String?) {
+        speechController.applyVoiceType(config.voiceType)
         val durationMs = if (config.voiceEnabled) {
             speechController.speak(text, audioName) { }
         } else {

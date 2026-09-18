@@ -28,10 +28,43 @@ voice_notes/generated/
 Thumbs.db
 .vscode/
 .idea/
-# ── Experimental character styles (not pushed to git) ───────────────
+# ── Binaries & Executables ─────────────────────────────────────────
+*.exe
+*.apk
+app-debug.apk
+DesktopMascot.exe
+releases/
+
+# ── Private Personal Characters (Kept local, never on git) ───────────
+characters/chibi/
+characters/guy/
+characters/mascot/
 characters/pixel/
 characters/ink/
+
+android/app/src/main/assets/characters/chibi/
+android/app/src/main/assets/characters/guy/
+android/app/src/main/assets/characters/mascot/
 android/app/src/main/assets/characters/pixel/
 android/app/src/main/assets/characters/ink/
+
+web/assets/characters/chibi/
+web/assets/characters/guy/
+web/assets/characters/mascot/
 web/assets/characters/pixel/
 web/assets/characters/ink/
+
+# ── Private Voice Notes & Audio Caches ──────────────────────────────
+voice_notes/
+assets/voices_cache/
+android/app/src/main/assets/voice_notes/
+android/app/src/main/assets/voices_cache/
+voice_notes/generated/
+*.wav.tmp
+
+# ── Private default mascot sprite sheets (personal character) ────────
+assets/mascot-directions.png
+assets/mascot-reactions.png
+assets/mascot-directions.webp
+assets/mascot-reactions.webp
+

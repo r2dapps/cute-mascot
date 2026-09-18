@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Overlay: float over other apps -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <!-- Foreground service: keep mascot alive without being killed -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-    <!-- Haptic boop feedback -->
     <uses-permission android:name="android.permission.VIBRATE" />
-    <!-- Read user voice notes from shared storage (optional) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <!-- Notification banner for reminders -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- Gyroscope is optional - mascot works fine without it -->
     <uses-feature android:name="android.hardware.sensor.gyroscope" android:required="false" />
 
     <application
@@ -26,7 +24,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CuteMascot">
 
-        <!-- Main permission-grant entry screen -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -37,11 +34,23 @@
             </intent-filter>
         </activity>
 
-        <!-- Floating overlay foreground service -->
         <service
             android:name=".MascotOverlayService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <receiver
+            android:name=".ReminderReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.r2dapps.cutemascot.ACTION_REMINDER" />
+                <action android:name="com.r2dapps.cutemascot.ACTION_SNOOZE" />
+                <action android:name="com.r2dapps.cutemascot.ACTION_DISMISS" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 </manifest>

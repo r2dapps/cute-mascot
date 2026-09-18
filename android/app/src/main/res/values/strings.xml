@@ -2,5 +2,17 @@
 <resources>
     <string name="app_name">Cute Mascot</string>
     <string name="channel_name">Mascot Overlay</string>
-    <string name="accessibility_service_desc">Allows Cute Mascot to follow your finger taps across other apps without interfering with touch.</string>
+    <string name="status_ready">Ready · overlay active</string>
+    <string name="status_need_permission">Display over apps required</string>
+    <string name="show_mascot">Show mascot</string>
+    <string name="hide_mascot">Hide mascot</string>
+    <string name="section_size">Size</string>
+    <string name="section_skin">Character</string>
+    <string name="section_tracking">Look tracking</string>
+    <string name="section_voice">Voice &amp; reminders</string>
+    <string name="track_touch">Touch on mascot / settings</string>
+    <string name="track_gyro">Gyroscope (phone tilt)</string>
+    <string name="track_hint">Touch mode follows taps on the mascot and in this settings screen — not across other apps.</string>
+    <string name="voice_enabled">Speak reminders aloud</string>
+    <string name="reminders_hint">Clock-style alarms for daily or weekly times. Ringtone can be system default, bundled voices, or your imported voice notes.</string>
 </resources>

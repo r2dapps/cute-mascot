@@ -48,7 +48,7 @@ class MascotOverlayService : Service() {
 
         createNotificationChannels()
 
-        // Safe startForeground with Android 14 API 34 foregroundServiceType support
+        // Start foreground service safely with dataSync type on Android Q+
         try {
             val notif = buildNotification()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -136,6 +136,18 @@ class MascotOverlayService : Service() {
             }
         }
         mascotView.onConfigChanged()
+    }
+
+    fun triggerReminderFromAlarm(text: String, audioName: String?) {
+        if (::mascotView.isInitialized) {
+            mascotView.triggerAlarmReminder(text, audioName)
+        }
+    }
+
+    fun dismissActiveReminder() {
+        if (::mascotView.isInitialized) {
+            mascotView.dismissActiveReminder()
+        }
     }
 
     fun onScreenTouch(rawX: Float, rawY: Float) {
