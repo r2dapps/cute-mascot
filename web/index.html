@@ -23,8 +23,8 @@
       <div class="whisper-tail"></div>
     </div>
     <div id="cornerSquash" class="corner-squash">
-      <div id="cornerDirLayer" class="mascot-sprite" style="background-image: url('../assets/mascot-directions.png');"></div>
-      <div id="cornerReactLayer" class="mascot-sprite" style="background-image: url('../assets/mascot-reactions.png'); opacity: 0;"></div>
+      <div id="cornerDirLayer" class="mascot-sprite" style="background-image: url('assets/characters/fox/directions.png');"></div>
+      <div id="cornerReactLayer" class="mascot-sprite" style="background-image: url('assets/characters/fox/reactions.png'); opacity: 0;"></div>
     </div>
     <div class="corner-halo"></div>
   </div>
@@ -39,10 +39,10 @@
         </svg>
         <span>Desktop Companion &amp; Interactive Mascot</span>
       </div>
-      <h1 class="romance-title">Meet Your Gentle Desktop Companion</h1>
+      <h1 class="romance-title">Meet Your Cute Desktop Companion</h1>
       <p class="romance-subtitle">
-        A custom chibi mascot designed to keep you company. 
-        Her head follows your cursor across screens, reacts to clicks, and floats gracefully on your desktop.
+        A customisable floating mascot that lives on your screen. 
+        Its head follows your cursor, reacts to clicks, speaks reminders aloud, and floats gracefully over every app — on Windows and Android.
       </p>
     </header>
 
@@ -58,8 +58,8 @@
         </div>
 
         <div id="mascotSquash" class="mascot-squash">
-          <div id="directionsLayer" class="mascot-layer" style="background-image: url('../assets/mascot-directions.png');"></div>
-          <div id="reactionsLayer" class="mascot-layer" style="background-image: url('../assets/mascot-reactions.png'); opacity: 0;"></div>
+          <div id="directionsLayer" class="mascot-layer" style="background-image: url('assets/characters/fox/directions.png');"></div>
+          <div id="reactionsLayer" class="mascot-layer" style="background-image: url('assets/characters/fox/reactions.png'); opacity: 0;"></div>
         </div>
         <div class="mascot-shadow"></div>
       </div>
@@ -68,14 +68,18 @@
         <span>Click to boop &bull; Rapid click four times for dizzy reaction &bull; Notice corner companion watching too</span>
       </div>
 
-      <!-- Live Style Skin Switcher -->
+      <!-- Live Style Skin Switcher (open page-mascot characters) -->
       <div class="skin-switcher-bar">
-        <span class="skin-label">Style Skin:</span>
-        <button type="button" class="skin-chip active" id="skinChibiBtn" data-skin="chibi">Chibi Girl (Restored Style)</button>
-        <button type="button" class="skin-chip" id="skinMascotBtn" data-skin="mascot">Fox Mascot (Classic)</button>
-        <button type="button" class="skin-chip" id="skinGuyBtn" data-skin="guy">Companion Guy (Curly &amp; Glasses)</button>
-        <button type="button" class="skin-chip" id="skinPixelBtn" data-skin="pixel">Pixel Art Priya (Retro 16-Bit)</button>
-        <button type="button" class="skin-chip" id="skinInkBtn" data-skin="ink">Ink Manga Priya (Sketch Style)</button>
+        <span class="skin-label">Try a skin:</span>
+        <button type="button" class="skin-chip active" id="skinFoxBtn"        data-skin="fox">🦊 Fox</button>
+        <button type="button" class="skin-chip"        id="skinCatBtn"        data-skin="cat">🐱 Cat</button>
+        <button type="button" class="skin-chip"        id="skinRobotBtn"      data-skin="robot">🤖 Robot</button>
+        <button type="button" class="skin-chip"        id="skinOtterBtn"      data-skin="otter">🦦 Otter</button>
+        <button type="button" class="skin-chip"        id="skinPenguinBtn"    data-skin="penguin">🐧 Penguin</button>
+        <button type="button" class="skin-chip"        id="skinFoxSketchBtn"  data-skin="fox-sketch">✏️ Fox Sketch</button>
+        <button type="button" class="skin-chip"        id="skinBearBtn"       data-skin="bear">🐻 Bear</button>
+        <button type="button" class="skin-chip"        id="skinPandaBtn"      data-skin="panda">🐼 Panda</button>
+        <button type="button" class="skin-chip"        id="skinKoalaBtn"      data-skin="koala">🐨 Koala</button>
       </div>
     </section>
 
@@ -119,16 +123,17 @@
     <section class="info-grid">
       <!-- Windows Standalone App Card -->
       <div class="glass-card download-card">
-        <div class="card-badge">Windows Desktop (v1.3.0)</div>
+        <div class="card-badge">Windows Desktop (v1.4.0)</div>
         <h2>Desktop Floating Widget</h2>
         <p>
-          Run her right on your Windows desktop above any program, taskbar, or game. 
-          Zero installation needed, pure Win32 per-pixel transparency, hot-swappable sheets, Japanese anime &amp; Godavari Telugu talking reminders, lip-sync, and startup support.
+          Run your mascot right on your Windows desktop above any program, taskbar, or game.
+          Zero installation needed — pure Win32 per-pixel transparency, hot-swappable character skins, 
+          4-voice TTS (Telugu &amp; Japanese, male &amp; female), lip-sync, and startup support.
         </p>
         <div class="cta-row">
-          <a href="https://github.com/r2dapps/cute-mascot/releases/download/v1.3.0/DesktopMascot.exe" download class="download-btn">
+          <a href="https://github.com/r2dapps/cute-mascot/releases/download/v1.4.0/DesktopMascot.exe" download class="download-btn">
             <span>Download DesktopMascot.exe</span>
-            <small>v1.3.0 Standalone &bull; Windows 10/11 (64-bit)</small>
+            <small>v1.4.0 Standalone &bull; Windows 10/11 (64-bit)</small>
           </a>
           <a href="https://github.com/r2dapps/cute-mascot" target="_blank" class="secondary-btn">
             <span>Source Code on GitHub</span>
@@ -138,15 +143,16 @@
 
       <!-- Android Mobile App Card -->
       <div class="glass-card download-card">
-        <div class="card-badge" style="background: rgba(52, 211, 153, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.3);">Android Mobile (v1.3.0)</div>
+        <div class="card-badge" style="background: rgba(52, 211, 153, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.3);">Android Mobile (v1.4.0)</div>
         <h2>Mobile Floating Mascot</h2>
         <p>
-          Float your mascot over any phone app! Features full screen touch tracking (like this website), talking periodic health reminders, customized size, audio engine, and live style skins.
+          Float your mascot over any phone app! Includes 9 starter characters, 4 TTS voice types (Telugu &amp; Japanese male/female), 
+          alarm reminders, custom PNG import, and a built-in AI Prompt Studio to create your own character!
         </p>
         <div class="cta-row">
-          <a href="https://github.com/r2dapps/cute-mascot/releases/download/v1.3.0/CuteMascot.apk" download class="download-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);">
+          <a href="https://github.com/r2dapps/cute-mascot/releases/download/v1.4.0/CuteMascot.apk" download class="download-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);">
             <span>Download CuteMascot.apk</span>
-            <small>v1.3.0 APK &bull; Android 8.0 to 14+ Ready</small>
+            <small>v1.4.0 APK &bull; Android 8.0+ (Oreo &amp; above)</small>
           </a>
           <a href="javascript:void(0)" class="secondary-btn" id="btnToggleGuide">
             <span>Android Setup &amp; 3-Dots Guide</span>
@@ -278,9 +284,10 @@ Consistent character design matching the same character, clean outlines, no bord
     <!-- Footer -->
     <footer class="romantic-footer">
       <p>
-        Built with care and appreciation for <a href="https://github.com/nilbuild/page-mascot" target="_blank">nilbuild/page-mascot</a>.
+        Built with love, inspired by <a href="https://github.com/nicholasgasior/page-mascot" target="_blank">page-mascot</a> by nicholasgasior. Thank you for the foundation! 🙏
       </p>
-      <p class="copyright">MIT License &bull; Cute Desktop Mascot v1.0.0</p>
+      <p>Characters artwork from the open-source <a href="https://github.com/nicholasgasior/page-mascot" target="_blank">page-mascot</a> project.</p>
+      <p class="copyright">MIT License &bull; Cute Desktop Mascot v1.4.0 &bull; <a href="https://github.com/r2dapps/cute-mascot" target="_blank">GitHub</a></p>
     </footer>
   </main>
 

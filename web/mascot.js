@@ -469,51 +469,38 @@ class CompanionManager {
       });
     });
 
-    // Style Skin Switcher
+    // Style Skin Switcher — 9 open page-mascot characters
+    const SKINS = {
+      'fox':       { label: '🦊 Fox',        dir: 'assets/characters/fox/directions.png',        react: 'assets/characters/fox/reactions.png' },
+      'cat':       { label: '🐱 Cat',        dir: 'assets/characters/cat/directions.png',        react: 'assets/characters/cat/reactions.png' },
+      'robot':     { label: '🤖 Robot',      dir: 'assets/characters/robot/directions.png',      react: 'assets/characters/robot/reactions.png' },
+      'otter':     { label: '🦦 Otter',      dir: 'assets/characters/otter/directions.png',      react: 'assets/characters/otter/reactions.png' },
+      'penguin':   { label: '🐧 Penguin',    dir: 'assets/characters/penguin/directions.png',    react: 'assets/characters/penguin/reactions.png' },
+      'fox-sketch':{ label: '✏️ Fox Sketch', dir: 'assets/characters/fox-sketch/directions.png', react: 'assets/characters/fox-sketch/reactions.png' },
+      'bear':      { label: '🐻 Bear',       dir: 'assets/characters/bear/directions.png',       react: 'assets/characters/bear/reactions.png' },
+      'panda':     { label: '🐼 Panda',      dir: 'assets/characters/panda/directions.png',      react: 'assets/characters/panda/reactions.png' },
+      'koala':     { label: '🐨 Koala',      dir: 'assets/characters/koala/directions.png',      react: 'assets/characters/koala/reactions.png' },
+    };
+
     const setSkin = (skinName) => {
-      let dirUrl, reactUrl, msg;
-      if (skinName === 'guy') {
-        dirUrl = 'assets/characters/guy/directions.png';
-        reactUrl = 'assets/characters/guy/reactions.png';
-        msg = "Switched to Companion Guy!";
-      } else if (skinName === 'pixel') {
-        dirUrl = 'assets/characters/pixel/directions.png';
-        reactUrl = 'assets/characters/pixel/directions.png';
-        msg = "Switched to Pixel Art Priya!";
-      } else if (skinName === 'ink') {
-        dirUrl = 'assets/characters/ink/directions.png';
-        reactUrl = 'assets/characters/ink/directions.png';
-        msg = "Switched to Ink Manga Priya!";
-      } else if (skinName === 'mascot') {
-        dirUrl = '../assets/mascot-directions.png';
-        reactUrl = '../assets/mascot-reactions.png';
-        msg = "Switched to Classic Fox Mascot!";
-      } else {
-        dirUrl = 'assets/characters/chibi/directions.png';
-        reactUrl = 'assets/characters/chibi/reactions.png';
-        msg = "Switched to Chibi Girl style!";
-      }
-
-      if (this.heroDir) this.heroDir.style.backgroundImage = `url('${dirUrl}')`;
-      if (this.heroReact) this.heroReact.style.backgroundImage = `url('${reactUrl}')`;
-      if (this.cornerDir) this.cornerDir.style.backgroundImage = `url('${dirUrl}')`;
-      if (this.cornerReact) this.cornerReact.style.backgroundImage = `url('${reactUrl}')`;
-
-      document.getElementById('skinChibiBtn')?.classList.toggle('active', skinName === 'chibi');
-      document.getElementById('skinMascotBtn')?.classList.toggle('active', skinName === 'mascot');
-      document.getElementById('skinGuyBtn')?.classList.toggle('active', skinName === 'guy');
-      document.getElementById('skinPixelBtn')?.classList.toggle('active', skinName === 'pixel');
-      document.getElementById('skinInkBtn')?.classList.toggle('active', skinName === 'ink');
-      this.showBubble(msg);
+      const skin = SKINS[skinName] || SKINS['fox'];
+      if (this.heroDir)    this.heroDir.style.backgroundImage    = `url('${skin.dir}')`;
+      if (this.heroReact)  this.heroReact.style.backgroundImage  = `url('${skin.react}')`;
+      if (this.cornerDir)  this.cornerDir.style.backgroundImage  = `url('${skin.dir}')`;
+      if (this.cornerReact)this.cornerReact.style.backgroundImage= `url('${skin.react}')`;
+      // update active chip
+      document.querySelectorAll('.skin-chip').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.skin === skinName);
+      });
+      this.showBubble(`Switched to ${skin.label}!`);
       this.triggerReaction('heart', 900);
       playRomanticChime(659.25, 0.25);
     };
 
-    document.getElementById('skinChibiBtn')?.addEventListener('click', () => setSkin('chibi'));
-    document.getElementById('skinMascotBtn')?.addEventListener('click', () => setSkin('mascot'));
-    document.getElementById('skinGuyBtn')?.addEventListener('click', () => setSkin('guy'));
-    document.getElementById('skinPixelBtn')?.addEventListener('click', () => setSkin('pixel'));
-    document.getElementById('skinInkBtn')?.addEventListener('click', () => setSkin('ink'));
+    // Wire all skin chips via data-skin attribute (no hardcoded IDs needed)
+    document.querySelectorAll('.skin-chip[data-skin]').forEach(btn => {
+      btn.addEventListener('click', () => setSkin(btn.dataset.skin));
+    });
 
     // Android Install Guide Toggle
     document.getElementById('btnToggleGuide')?.addEventListener('click', (e) => {
@@ -553,8 +540,8 @@ class CompanionManager {
       });
     });
 
-    // Default to restored Chibi skin
-    setSkin('chibi');
+    // Default skin on load
+    setSkin('fox');
   }
 }
 
